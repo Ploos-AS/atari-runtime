@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p artifacts
-          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10560110819/zip
+          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10561450717/zip
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
@@ -45,7 +45,8 @@ jobs:
           rm -f artifacts/M2PASS.TXT
           rm -rf artifacts/AUTO
           mkdir -p artifacts/AUTO
-          cp artifacts/HELLO.TOS artifacts/AUTO/HELLO.PRG
+          test -s artifacts/HELLO.PRG
+          cp artifacts/HELLO.PRG artifacts/AUTO/HELLO.PRG
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" \
             -e ATARI_HATARI_ARGS='--gemdos-drive C --run-vbls 1200 --disable-video true --sound off' \
