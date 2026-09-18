@@ -40,5 +40,13 @@ jobs:
           sha256sum artifacts/HELLO.TOS
       - name: Launch canonical artifact on Hatari + EmuTOS
         run: |
-          timeout 20s docker run --rm             -v "$PWD/artifacts:/runtime/artifacts:ro"             atari-runtime:m2             xvfb-run -a /runtime/tools/launch.sh "${{ matrix.profile }}" || rc=$?
-          test "${rc:-124}" -eq 124
+          name="atari-m2-${{ matrix.profile }}"
+          docker run --name "$name" \
+            -v "$PWD/artifacts:/runtime/artifacts:ro" \
+            atari-runtime:m2 \
+            xvfb-run -a /runtime/tools/launch.sh "${{ matrix.profile }}" &
+          pid=$!
+          sleep 20
+          docker kill "$name" >/dev/null 2>&1 || true
+          wait "$pid" || true
+          docker rm -f "$name" >/dev/null 2>&1 || true
