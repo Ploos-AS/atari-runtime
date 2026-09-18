@@ -67,13 +67,26 @@ jobs:
             fi
             sleep 1
           done
-          docker kill "$name" >/dev/null 2>&1 || true
-          wait "$pid" || true
-          docker rm -f "$name" >/dev/null 2>&1 || true
           if [ "$found" -ne 1 ]; then
+            echo "=== docker logs (before stop) ==="
+            docker logs "$name" 2>&1 || true
+            echo "=== mounted Hatari files (before stop) ==="
+            ls -la artifacts || true
             echo "=== Hatari log ==="
             cat "artifacts/hatari-${{ matrix.profile }}.log" 2>/dev/null || true
             echo "=== GEMDOS trace tail ==="
+            tail -n 200 "artifacts/hatari-${{ matrix.profile }}.trace" 2>/dev/null || true
+          fi
+          docker kill "$name" >/dev/null 2>&1 || true
+          wait "$pid" || true
+          echo "=== docker logs (after stop) ==="
+          docker logs "$name" 2>&1 || true
+          docker cp "$name:/root/.config/hatari/hatari.cfg" "artifacts/hatari-${{ matrix.profile }}.cfg" 2>/dev/null || true
+          docker rm -f "$name" >/dev/null 2>&1 || true
+          if [ "$found" -ne 1 ]; then
+            echo "=== mounted Hatari files (after stop) ==="
+            ls -la artifacts || true
+            cat "artifacts/hatari-${{ matrix.profile }}.log" 2>/dev/null || true
             tail -n 200 "artifacts/hatari-${{ matrix.profile }}.trace" 2>/dev/null || true
           fi
           test "$found" -eq 1
