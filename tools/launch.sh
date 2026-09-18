@@ -2,10 +2,10 @@
 set -eu
 
 profile="${1:-st}"
-rom=/runtime/roms/tos.img
+rom="${ATARI_ROM:-/runtime/roms/emutos.img}"
 
 if [ ! -f "$rom" ]; then
-    echo "ERROR: mount a legally obtained TOS image at $rom" >&2
+    echo "ERROR: Atari ROM not found at $rom" >&2
     exit 2
 fi
 
