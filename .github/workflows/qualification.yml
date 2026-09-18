@@ -14,6 +14,8 @@ jobs:
         run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata
         run: docker run --rm atari-runtime:m2 tools/runtime-info.sh
+      - name: Hatari CLI capabilities
+        run: docker run --rm atari-runtime:m2 sh -c 'hatari --help 2>&1 | tee /tmp/hatari-help.txt; grep -Ei "auto|run|program|gemdos|harddrive" /tmp/hatari-help.txt || true'
       - name: Hatari + EmuTOS smoke
         run: docker run --rm atari-runtime:m2 tools/smoke.sh
       - name: Verify M2 helper
