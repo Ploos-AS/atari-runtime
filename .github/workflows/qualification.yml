@@ -14,7 +14,31 @@ jobs:
         run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata
         run: docker run --rm atari-runtime:m2 tools/runtime-info.sh
-      - name: ROM-free qualification
+      - name: Hatari + EmuTOS smoke
         run: docker run --rm atari-runtime:m2 tools/smoke.sh
       - name: Verify M2 helper
         run: docker run --rm atari-runtime:m2 sh -n tools/qualify-m2.sh
+
+  m2-emulator:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [st, ste]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build atari-runtime image
+        run: docker build -t atari-runtime:m2 -f Containerfile .
+      - name: Download canonical atari-dev M2 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts
+          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10558518162/zip
+          unzip -q /tmp/atari-dev-m2.zip -d artifacts
+          test -s artifacts/HELLO.TOS
+          sha256sum artifacts/HELLO.TOS
+      - name: Launch canonical artifact on Hatari + EmuTOS
+        run: |
+          timeout 20s docker run --rm             -v "$PWD/artifacts:/runtime/artifacts:ro"             atari-runtime:m2             xvfb-run -a /runtime/tools/launch.sh "${{ matrix.profile }}" || rc=$?
+          test "${rc:-124}" -eq 124
