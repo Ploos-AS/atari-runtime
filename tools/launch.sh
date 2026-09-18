@@ -24,4 +24,4 @@ case "$profile" in
     ;;
 esac
 
-exec hatari --machine "$machine" --memsize "$memory" --tos "$rom" --harddrive /runtime/artifacts
+exec hatari --machine "$machine" --memsize "$memory" --tos "$rom" --harddrive /runtime/artifacts ${ATARI_HATARI_ARGS:-}
