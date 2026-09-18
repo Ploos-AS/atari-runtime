@@ -53,6 +53,10 @@ jobs:
               --tos /runtime/roms/emutos.img \
               --harddrive /runtime/artifacts \
               --gemdos-drive C \
+              --log-level debug \
+              --trace gemdos \
+              --trace-file /runtime/artifacts/hatari-${{ matrix.profile }}.trace \
+              --log-file /runtime/artifacts/hatari-${{ matrix.profile }}.log \
               --auto 'C:\\HELLO.TOS' &
           pid=$!
           found=0
@@ -66,6 +70,12 @@ jobs:
           docker kill "$name" >/dev/null 2>&1 || true
           wait "$pid" || true
           docker rm -f "$name" >/dev/null 2>&1 || true
+          if [ "$found" -ne 1 ]; then
+            echo "=== Hatari log ==="
+            cat "artifacts/hatari-${{ matrix.profile }}.log" 2>/dev/null || true
+            echo "=== GEMDOS trace tail ==="
+            tail -n 200 "artifacts/hatari-${{ matrix.profile }}.trace" 2>/dev/null || true
+          fi
           test "$found" -eq 1
       - name: Verify Atari-side execution evidence
         run: |
