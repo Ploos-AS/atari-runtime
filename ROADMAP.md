@@ -1,34 +1,32 @@
 # Roadmap
 
 ## M0 — Foundation — PASS
-
 - repository baseline
-- MIT software licence
-- Hatari container skeleton
+- MIT licence
+- Hatari container
 - external ROM/config/artifact mounts
-- dev/runtime separation
-- documented Ploos-AS standards
 
 ## M1 — Hatari qualification baseline — PASS
-
 - Hatari version reporting
-- reproducible ST and STE profile contract
-- external TOS discovery
-- launch helper
-- ROM-free infrastructure smoke test
-- GitHub Actions qualification
-- no TOS redistribution
+- ST/STE profiles
+- ROM discovery
+- ROM-free CI smoke test
 
-## M2 — Runtime evidence and TOS application qualification
+## M2 — TOS artifact qualification — IMPLEMENTED / RUNTIME EVIDENCE PENDING
+- accept the canonical `HELLO.TOS` artifact from atari-dev
+- validate artifact hand-off
+- launch same artifact under ST/STE profile
+- preserve external-only TOS policy
+- machine-readable evidence skeleton
 
-- consume TOS-native M2 artifact from `atari-dev`
-- machine-readable qualification result
-- logs and screenshots as artifacts where useful
-- reusable consumer workflow
-- qualification with user/runner-provided legal TOS material
+M2 becomes runtime PASS when execution evidence is captured from Hatari with an appropriate legal TOS environment.
 
-## M3 — Cross-emulator and extended machines
+## M3 — Reusable qualification
+- consumer workflow
+- automated evidence collection
+- screenshots/logs
+- open-ROM CI path where legally and technically appropriate
 
-- evaluate a second independent Atari emulator
-- evaluate TT/Falcon profiles
-- keep emulator-specific differences explicit
+## M4 — Extended machines
+- second emulator
+- TT/Falcon profiles
