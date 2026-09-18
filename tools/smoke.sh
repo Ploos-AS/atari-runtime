@@ -6,6 +6,6 @@ printf '%s\n' "$hatari_version" | grep -qi 'hatari'
 test -d /runtime/artifacts
 test -d /runtime/config
 test -d /runtime/roms
-test ! -f /runtime/roms/tos.img
+test -s /runtime/roms/emutos.img
 
-echo "M1 atari-runtime infrastructure qualification: PASS"
+echo "atari-runtime Hatari + EmuTOS infrastructure qualification: PASS"
