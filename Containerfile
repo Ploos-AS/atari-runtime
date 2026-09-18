@@ -10,6 +10,7 @@ RUN apt-get update \
        curl \
        unzip \
        hatari \
+       hatari-doc \
        xvfb \
        xauth \
     && rm -rf /var/lib/apt/lists/*
