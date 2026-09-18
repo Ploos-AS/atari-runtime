@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p artifacts
-          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10564947504/zip
+          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10570949048/zip
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
