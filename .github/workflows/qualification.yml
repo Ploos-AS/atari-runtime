@@ -43,9 +43,12 @@ jobs:
       - name: Execute canonical artifact on Hatari + EmuTOS
         run: |
           rm -f artifacts/M2PASS.TXT
+          rm -rf artifacts/AUTO
+          mkdir -p artifacts/AUTO
+          cp artifacts/HELLO.TOS artifacts/AUTO/HELLO.PRG
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" \
-            -e ATARI_HATARI_ARGS='--gemdos-drive C --auto C:\\HELLO.TOS --run-vbls 1200 --disable-video true --sound off' \
+            -e ATARI_HATARI_ARGS='--gemdos-drive C --run-vbls 1200 --disable-video true --sound off' \
             atari-runtime:m2 \
             /runtime/tools/launch.sh "${{ matrix.profile }}"
       - name: Verify Atari-side execution evidence
