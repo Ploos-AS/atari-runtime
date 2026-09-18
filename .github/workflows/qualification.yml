@@ -6,13 +6,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  m1:
+  infrastructure:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build atari-runtime image
-        run: docker build -t atari-runtime:m1 -f Containerfile .
+        run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata
-        run: docker run --rm atari-runtime:m1 tools/runtime-info.sh
-      - name: M1 ROM-free qualification
-        run: docker run --rm atari-runtime:m1 tools/smoke.sh
+        run: docker run --rm atari-runtime:m2 tools/runtime-info.sh
+      - name: ROM-free qualification
+        run: docker run --rm atari-runtime:m2 tools/smoke.sh
+      - name: Verify M2 helper
+        run: docker run --rm atari-runtime:m2 sh -n tools/qualify-m2.sh
