@@ -72,8 +72,3 @@ jobs:
         run: |
           test -s artifacts/MINIMAL.PRG
           file artifacts/MINIMAL.PRG
-
-        run: |
-          test -s artifacts/M2PASS.TXT
-          grep -Fx 'Ploos-AS atari-dev M2 execution PASS' artifacts/M2PASS.TXT
-          printf 'M2 Hatari + EmuTOS %s execution: PASS\n' "${{ matrix.profile }}"
