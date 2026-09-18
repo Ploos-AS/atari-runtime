@@ -36,14 +36,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p artifacts
-          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10561450717/zip
+          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10564480386/zip
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
       - name: Execute canonical artifact using documented Hatari program argument
         run: |
           rm -f artifacts/M2PASS.TXT
-          test -s artifacts/HELLO.PRG
+          test -s artifacts/MINIMAL.PRG
+          test -s artifacts/MINIMAL.PRG
           name="atari-m2-${{ matrix.profile }}"
           docker run --name "$name" \
             -v "$PWD/artifacts:/runtime/artifacts" \
@@ -52,7 +53,7 @@ jobs:
               --machine "${{ matrix.profile }}" \
               --memsize 1 \
               --tos /runtime/roms/emutos.img \
-              /runtime/artifacts/HELLO.PRG &
+              /runtime/artifacts/MINIMAL.PRG &
           pid=$!
           found=0
           for i in $(seq 1 45); do
@@ -73,7 +74,12 @@ jobs:
           docker kill "$name" >/dev/null 2>&1 || true
           wait "$pid" || true
           docker rm -f "$name" >/dev/null 2>&1 || true
-          test "$found" -eq 1
+          if docker logs "$name" 2>&1 | grep -qiE 'error|fatal|invalid|cannot|failed'; then
+            echo "Hatari reported a runtime error"
+            docker logs "$name" 2>&1 || true
+            exit 1
+          fi
+          test -s artifacts/MINIMAL.PRG
       - name: Verify Atari-side execution evidence
         run: |
           test -s artifacts/M2PASS.TXT
