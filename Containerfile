@@ -11,6 +11,7 @@ RUN apt-get update \
        unzip \
        hatari \
        xvfb \
+       xauth \
     && rm -rf /var/lib/apt/lists/*
 
 
