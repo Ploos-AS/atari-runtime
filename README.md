@@ -4,32 +4,54 @@ Standard containerized Atari runtime and qualification environment for Ploos-AS 
 
 ## Purpose
 
-`atari-runtime` is the canonical runtime environment for executing and qualifying Atari ST-family software built with [`Ploos-AS/atari-dev`](https://github.com/Ploos-AS/atari-dev).
+`atari-runtime` is the canonical runtime environment for executing and qualifying Atari ST-family software built with [Ploos-AS/atari-dev](https://github.com/Ploos-AS/atari-dev).
 
-Initial M0 scope targets Atari ST/STE first. TT/Falcon support can be added later where useful.
+M1 establishes Hatari discovery, version reporting, external TOS handling and reproducible ST/STE profile descriptions. TOS images are always supplied by the user and are never committed to this repository or baked into the image.
 
-## M0 baseline
+## M1 usage
 
-- reproducible container-based runtime environment
-- Hatari as the initial primary emulator
-- runtime configuration mounted from outside the image
-- project artifacts mounted into the runtime for qualification
-- CI-friendly smoke-test path where emulator behaviour permits it
-- no proprietary Atari TOS ROM images in the repository or container image
-- user-supplied, legally obtained TOS images only
+Build:
 
-## Qualification model
+```sh
+docker build -t atari-runtime:m1 -f Containerfile .
+```
 
-The runtime should make it possible to distinguish application defects from emulator-specific behaviour. Hatari is the first baseline emulator; a second independent emulator may be added later for cross-verification.
+Inspect runtime:
 
-## Ploos-AS standards
+```sh
+docker run --rm atari-runtime:m1 tools/runtime-info.sh
+```
 
-- Software and runtime infrastructure: MIT by default unless an inherited licence applies.
-- Documentation and educational material: CC BY-SA 4.0 by default unless an inherited licence applies.
-- Documentation source: Markdown, with `Ploos-AS/Documentation-Tools` used for generated documentation where applicable.
+Validate repository/runtime policy without a ROM:
+
+```sh
+docker run --rm atari-runtime:m1 tools/smoke.sh
+```
+
+For an actual emulator launch, mount a legally obtained TOS image read-only at `/runtime/roms/tos.img` and project artifacts at `/runtime/artifacts`.
+
+```sh
+docker run --rm -it \
+  -v /path/to/tos.img:/runtime/roms/tos.img:ro \
+  -v "$PWD/dist:/runtime/artifacts:ro" \
+  atari-runtime:m1 tools/launch.sh st
+```
+
+## Profiles
+
+M1 defines two baseline profiles:
+
+- `st`: Atari ST, 68000, 1 MiB RAM
+- `ste`: Atari STE, 68000, 1 MiB RAM
+
+The launch helper maps these profiles to Hatari command-line options so consumer projects do not duplicate emulator policy.
+
+## Qualification contract
+
+M1 can qualify the runtime infrastructure without proprietary ROM material. Executing a real TOS program requires an externally supplied TOS image. M2 will consume the TOS-native qualification artifact produced by `atari-dev` and record machine-readable evidence.
 
 ## Status
 
-**M0 — Foundation — IN PROGRESS**
+**M0 — Foundation — PASS**
 
-M0 establishes repository structure, licensing, emulator baseline and the contract with `atari-dev`.
+**M1 — Hatari qualification baseline — PASS (infrastructure/static qualification)**
