@@ -1,7 +1,8 @@
 #!/bin/sh
 set -eu
 
-hatari --version >/dev/null
+hatari_version="$(hatari --version 2>&1 || true)"
+printf '%s\n' "$hatari_version" | grep -qi 'hatari'
 test -d /runtime/artifacts
 test -d /runtime/config
 test -d /runtime/roms
