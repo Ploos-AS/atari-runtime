@@ -40,15 +40,16 @@ jobs:
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
-      - name: Launch canonical artifact on Hatari + EmuTOS
+      - name: Execute canonical artifact on Hatari + EmuTOS
         run: |
-          name="atari-m2-${{ matrix.profile }}"
-          docker run --name "$name" \
-            -v "$PWD/artifacts:/runtime/artifacts:ro" \
+          rm -f artifacts/M2PASS.TXT
+          docker run --rm \
+            -v "$PWD/artifacts:/runtime/artifacts" \
+            -e ATARI_HATARI_ARGS='--gemdos-drive C --auto C:\\HELLO.TOS --run-vbls 1200 --disable-video true --sound off' \
             atari-runtime:m2 \
-            xvfb-run -a /runtime/tools/launch.sh "${{ matrix.profile }}" &
-          pid=$!
-          sleep 20
-          docker kill "$name" >/dev/null 2>&1 || true
-          wait "$pid" || true
-          docker rm -f "$name" >/dev/null 2>&1 || true
+            /runtime/tools/launch.sh "${{ matrix.profile }}"
+      - name: Verify Atari-side execution evidence
+        run: |
+          test -s artifacts/M2PASS.TXT
+          grep -Fx 'Ploos-AS atari-dev M2 execution PASS' artifacts/M2PASS.TXT
+          printf 'M2 Hatari + EmuTOS %s execution: PASS\n' "${{ matrix.profile }}"
