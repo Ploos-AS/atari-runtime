@@ -40,13 +40,10 @@ jobs:
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
-      - name: Execute canonical artifact through TOS AUTO folder
+      - name: Execute canonical artifact using documented Hatari program argument
         run: |
           rm -f artifacts/M2PASS.TXT
-          rm -rf artifacts/AUTO
-          mkdir -p artifacts/AUTO
           test -s artifacts/HELLO.PRG
-          cp artifacts/HELLO.PRG artifacts/AUTO/HELLO.PRG
           name="atari-m2-${{ matrix.profile }}"
           docker run --name "$name" \
             -v "$PWD/artifacts:/runtime/artifacts" \
@@ -55,8 +52,7 @@ jobs:
               --machine "${{ matrix.profile }}" \
               --memsize 1 \
               --tos /runtime/roms/emutos.img \
-              --harddrive /runtime/artifacts \
-              --gemdos-drive C &
+              /runtime/artifacts/HELLO.PRG &
           pid=$!
           found=0
           for i in $(seq 1 45); do
@@ -69,7 +65,9 @@ jobs:
           if [ "$found" -ne 1 ]; then
             echo "=== docker logs ==="
             docker logs "$name" 2>&1 || true
-            echo "=== GEMDOS C: contents ==="
+            echo "=== host artifact inspection ==="
+            file artifacts/HELLO.PRG artifacts/HELLO.TOS || true
+            sha256sum artifacts/HELLO.PRG artifacts/HELLO.TOS || true
             find artifacts -maxdepth 2 -type f -printf '%P %s bytes\n' | sort || true
           fi
           docker kill "$name" >/dev/null 2>&1 || true
