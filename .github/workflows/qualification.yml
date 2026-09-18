@@ -43,7 +43,7 @@ jobs:
       - name: Execute canonical artifact on Hatari + EmuTOS
         run: |
           rm -f artifacts/M2PASS.TXT
-          docker run --rm \
+          timeout --signal=TERM --kill-after=5s 45s docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" \
             atari-runtime:m2 \
             xvfb-run -a hatari \
@@ -53,7 +53,8 @@ jobs:
               --harddrive /runtime/artifacts \
               --gemdos-drive C \
               --auto 'C:\\HELLO.TOS' \
-              --run-vbls 1500
+              --run-vbls 1500 || rc=$?
+          test "${rc:-0}" -eq 0 -o "${rc:-0}" -eq 124
       - name: Verify Atari-side execution evidence
         run: |
           test -s artifacts/M2PASS.TXT
