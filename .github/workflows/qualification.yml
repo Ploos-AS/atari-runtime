@@ -36,12 +36,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p artifacts
-          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10564480386/zip
+          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10564947504/zip
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
-      - name: Execute minimal probe using documented Hatari program argument
+      - name: Execute GEMDOS marker probe
         run: |
+          rm -f artifacts/MINPASS.TXT
           test -s artifacts/MINIMAL.PRG
           name="atari-m2-${{ matrix.profile }}"
           docker run --name "$name" \
@@ -51,24 +52,29 @@ jobs:
               --machine "${{ matrix.profile }}" \
               --memsize 1 \
               --tos /runtime/roms/emutos.img \
-              --run-vbls 600 \
               /runtime/artifacts/MINIMAL.PRG &
           pid=$!
-          sleep 20
+
+          found=0
+          for i in $(seq 1 45); do
+            if [ -s artifacts/MINPASS.TXT ]; then
+              found=1
+              break
+            fi
+            sleep 1
+          done
+
           echo "=== docker logs ==="
-          logs="$(docker logs "$name" 2>&1 || true)"
-          printf '%s\n' "$logs"
-          failed=0
-          if printf '%s\n' "$logs" | grep -qiE 'fatal|invalid|cannot execute|program.*error|bus error|address error|illegal instruction'; then
-            failed=1
-          fi
+          docker logs "$name" 2>&1 || true
           docker kill "$name" >/dev/null 2>&1 || true
           wait "$pid" || true
           docker rm -f "$name" >/dev/null 2>&1 || true
-          test "$failed" -eq 0
-          file artifacts/MINIMAL.PRG
-          printf 'Minimal Hatari + EmuTOS %s execution window: PASS\n' "${{ matrix.profile }}"
-      - name: Verify minimal runtime probe artifact
+
+          test "$found" -eq 1
+          grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
+          printf 'GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
+      - name: Verify Atari-side GEMDOS execution evidence
         run: |
-          test -s artifacts/MINIMAL.PRG
+          test -s artifacts/MINPASS.TXT
+          grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
           file artifacts/MINIMAL.PRG
