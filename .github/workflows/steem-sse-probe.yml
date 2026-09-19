@@ -148,7 +148,9 @@ jobs:
                   out.append(f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
           p.write_text("\\n".join(out) + "\\n")
           PY
-          grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/guest-c" steem-linux/bin/steem.ini
+          grep -F 'Drive_0_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
+          grep -F 'Drive_1_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
+          grep -F 'Drive_2_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
           grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
           grep -F 'Drive_3_Letter=Z' steem-linux/bin/steem.ini
