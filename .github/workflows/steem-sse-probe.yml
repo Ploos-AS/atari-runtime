@@ -195,22 +195,15 @@ jobs:
             geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null || true)"
             printf 'WINDOW %s %s\\n%s\\n' "$wid" "$name" "$geom"
           done | tee steem-sse-visible-windows-after-first-run.txt
-          win="$(python3 - <<'PY'
-import subprocess
-best = (0, "")
-ids = subprocess.check_output(["xdotool","search","--onlyvisible","--name",".*"], text=True).split()
-for wid in ids:
-    try:
-        g = subprocess.check_output(["xdotool","getwindowgeometry",wid], text=True)
-        line = next(x for x in g.splitlines() if "Geometry:" in x)
-        w,h = map(int, line.split("Geometry:")[1].strip().split("x"))
-        if w*h > best[0]:
-            best = (w*h, wid)
-    except Exception:
-        pass
-print(best[1])
-PY
-)"
+          win="$(for wid in $(xdotool search --onlyvisible --name '.*'); do
+            geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null | awk '/Geometry:/ {print $2}')"
+            w="${geom%x*}"
+            h="${geom#*x}"
+            if [ -n "$w" ] && [ -n "$h" ]; then
+              printf '%s %s\\n' "$((w*h))" "$wid"
+            fi
+          done | sort -nr | head -n 1 | awk '{print $2}')"
+
           test -n "$win"
           xdotool windowraise "$win" || true
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
