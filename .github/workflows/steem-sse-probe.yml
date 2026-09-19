@@ -181,7 +181,12 @@ jobs:
           # Screenshot evidence shows the Run/play control at the far left of
           # Steem's toolbar (window-relative ~10,10), not at the right edge.
           xdotool mousemove --window "$win" 10 10 click 1
-          sleep 10
+          sleep 2
+          # Fresh Steem profiles show a first-run modal before EmuTOS starts.
+          # The evidence image from probe #29 proved the previous "boot"
+          # screenshot was actually this modal. Dismiss Continue deterministically.
+          xdotool mousemove 470 433 click 1
+          sleep 12
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the guest desktop directly. Z: is the only
           # assigned hard drive in this probe. Open it and launch the
