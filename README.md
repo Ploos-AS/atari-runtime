@@ -56,3 +56,20 @@ Merely booting EmuTOS or locating the executable is not sufficient.
 
 - `st`: Atari ST / 68000 / 1 MiB
 - `ste`: Atari STE / 68000 / 1 MiB
+
+## Reusable consumer qualification
+
+M3.1 provides a reusable GitHub Actions workflow at `.github/workflows/reusable-qualification.yml`. Consumer projects upload an artifact containing `MINIMAL.PRG`, then call the workflow with the artifact name and either the `st` or `ste` profile. The workflow builds the canonical runtime, executes the guest probe, verifies `m2-result.txt` plus `MINPASS.TXT`, and uploads qualification evidence.
+
+Example caller:
+
+```yaml
+jobs:
+  qualify-atari:
+    uses: Ploos-AS/atari-runtime/.github/workflows/reusable-qualification.yml@main
+    with:
+      artifact-name: atari-build
+      profile: st
+```
+
+The caller artifact must contain `MINIMAL.PRG` at its root.
