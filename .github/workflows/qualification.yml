@@ -71,7 +71,7 @@ jobs:
           set +e
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 45s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --auto /runtime/artifacts/MINIMAL.PRG --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log --log-level debug --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log --run-vbls 1500 >/runtime/artifacts/hatari-stdout-${{ matrix.profile }}.log 2>/runtime/artifacts/hatari-stderr-${{ matrix.profile }}.log; rc=$?; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
+            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 45s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --auto MINIMAL.PRG --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log --log-level debug --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log --run-vbls 1500 >/runtime/artifacts/hatari-stdout-${{ matrix.profile }}.log 2>/runtime/artifacts/hatari-stderr-${{ matrix.profile }}.log; rc=$?; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
           rc=$?
           set -e
 
