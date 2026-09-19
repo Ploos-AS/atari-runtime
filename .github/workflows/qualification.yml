@@ -40,6 +40,30 @@ jobs:
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
+      - name: Probe Hatari program launch modes
+        run: |
+          test -s artifacts/MINIMAL.PRG
+          for mode in auto hostarg; do
+            name="atari-launch-${{ matrix.profile }}-$mode"
+            rm -f "artifacts/launch-$mode-${{ matrix.profile }}.log"
+            if [ "$mode" = auto ]; then
+              launch_args="--auto C:\\MINIMAL.PRG"
+            else
+              launch_args="/runtime/artifacts/MINIMAL.PRG"
+            fi
+            set +e
+            docker run --name "$name" \
+              -v "$PWD/artifacts:/runtime/artifacts" \
+              atari-runtime:m2 \
+              sh -c "xvfb-run -a hatari --machine '${{ matrix.profile }}' --memsize 1 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --run-vbls 1000 $launch_args" \
+              >"artifacts/launch-$mode-${{ matrix.profile }}.log" 2>&1
+            rc=$?
+            set -e
+            echo "=== launch mode=$mode rc=$rc ==="
+            cat "artifacts/launch-$mode-${{ matrix.profile }}.log" || true
+          done
+          echo "=== Hatari launch-related help ==="
+          docker run --rm atari-runtime:m2 sh -c 'hatari --help 2>&1 | grep -Ei "auto|run-vbls|program|harddrive|gemdos" || true'
       - name: Execute GEMDOS marker probe
         run: |
           rm -f artifacts/MINPASS.TXT
