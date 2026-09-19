@@ -146,9 +146,9 @@ jobs:
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c first execution attempt: open C: and launch MINIMAL.PRG
           # using deterministic GEM desktop mouse input.
-          xdotool mousemove --window "$win" 45 62 doubleclick 1
+          xdotool mousemove --window "$win" 45 62 click --repeat 2 --delay 120 1
           sleep 2
-          xdotool mousemove --window "$win" 90 92 doubleclick 1
+          xdotool mousemove --window "$win" 90 92 click --repeat 2 --delay 120 1
           sleep 5
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
