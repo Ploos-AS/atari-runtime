@@ -25,7 +25,7 @@ jobs:
       - name: Install runtime dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse0 xvfb gdb x11-utils xfonts-base xfonts-75dpi xfonts-100dpi
+          sudo apt-get install -y libpulse0 xvfb gdb x11-utils imagemagick xfonts-base xfonts-75dpi xfonts-100dpi
           test -s steem-linux/libs/libcapsimage.so.5
           mkdir -p "$RUNNER_TEMP/steem-libs"
           cp steem-linux/libs/libcapsimage.so.5 "$RUNNER_TEMP/steem-libs/"
@@ -145,6 +145,7 @@ jobs:
             x11-font-candidates.txt
             steem-sse-emutos-version.txt
             steem-sse-emutos-sha256.txt
+            steem-sse-emutos-boot.png
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-gdb.log
