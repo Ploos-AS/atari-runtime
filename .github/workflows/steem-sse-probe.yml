@@ -163,7 +163,14 @@ jobs:
           done | tee steem-sse-visible-windows.txt
           import -display :99 -window root steem-sse-prg-dialog.png
           test -s steem-sse-prg-dialog.png
-          sleep 2
+          # The disk manager is a separate cluster of child windows around
+          # screen position 282,348. Click its large directory pane to give it
+          # focus, then type the canonical PRG path and press Return. This is
+          # diagnostic: the exact guest marker remains mandatory.
+          xdotool mousemove 500 460 click 1
+          xdotool type --delay 20 "$GITHUB_WORKSPACE/steem-linux/bin/guest-c/MINIMAL.PRG" || true
+          xdotool key Return || true
+          sleep 5
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
