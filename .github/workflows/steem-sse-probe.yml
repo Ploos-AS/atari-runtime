@@ -111,8 +111,9 @@ jobs:
           xdotool windowraise "$win" || true
           sleep 1
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
-          # Run/play control is in the upper-right toolbar of the Steem UI.
-          xdotool mousemove --window "$win" 610 28 click 1
+          # Screenshot evidence shows the Run/play control at the far left of
+          # Steem's toolbar (window-relative ~10,10), not at the right edge.
+          xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
           test -s steem-sse-emutos-boot.png
