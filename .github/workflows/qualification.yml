@@ -67,6 +67,10 @@ jobs:
               --disk-a /runtime/artifacts/M2PROBE.ST \
               --harddrive /runtime/artifacts \
               --gemdos-drive C \
+              --trace os_base,gemdos \
+              --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log \
+              --log-level debug \
+              --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log \
               --run-vbls 1500 \
               >"artifacts/hatari-stdout-${{ matrix.profile }}.log" \
               2>"artifacts/hatari-stderr-${{ matrix.profile }}.log"
@@ -78,6 +82,12 @@ jobs:
           echo "=== Hatari stdout ==="
           cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" || true
           echo "Hatari rc=$rc"
+          echo "=== Hatari boot/debug evidence ==="
+          cat "artifacts/hatari-boot-debug-${{ matrix.profile }}.log" 2>/dev/null || true
+          echo "=== AUTO / PRG / GEMDOS trace evidence ==="
+          grep -Ei 'AUTO|MINIMAL|PRG|Pexec|Fcreate|Fwrite|GEMDOS|boot' "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 300 || true
+          echo "=== trace tail ==="
+          tail -n 160 "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null || true
 
           # timeout(1) may terminate the emulator after the guest already produced
           # authoritative evidence.  The marker, not Hatari shutdown, is the gate.
