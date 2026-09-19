@@ -57,7 +57,7 @@ jobs:
 
           name="atari-m2-${{ matrix.profile }}"
           set +e
-          docker run --name "$name" \
+          timeout --signal=TERM --kill-after=5s 60s docker run --name "$name" \
             -v "$PWD/artifacts:/runtime/artifacts" \
             atari-runtime:m2 \
             xvfb-run -a hatari \
@@ -79,7 +79,12 @@ jobs:
           cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" || true
           echo "Hatari rc=$rc"
 
-          test "$rc" -eq 0
+          # timeout(1) may terminate the emulator after the guest already produced
+          # authoritative evidence.  The marker, not Hatari shutdown, is the gate.
+          if [ "$rc" -ne 0 ] && [ ! -s artifacts/MINPASS.TXT ]; then
+            echo "ERROR: Hatari ended without guest marker (rc=$rc)" >&2
+            exit 1
+          fi
           test -s artifacts/MINPASS.TXT
           grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
           printf 'Floppy AUTO GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
