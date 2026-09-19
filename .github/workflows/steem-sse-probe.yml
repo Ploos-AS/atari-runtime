@@ -102,6 +102,28 @@ jobs:
           p.write_text("\n".join(lines) + "\n")
           PY
           grep -F "NewROMFile=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" steem-linux/bin/steem.ini
+          # Steem's active ROM is persisted separately under [Machine].
+          # NewROMFile alone still triggers the first-run TOS chooser.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("steem-linux/bin/steem.ini")
+          s = p.read_text()
+          rom = str(Path.cwd() / "steem-linux/bin/roms/emutos.img")
+          lines = []
+          in_machine = False
+          seen = False
+          for line in s.splitlines():
+              if line.startswith("["):
+                  in_machine = line.strip() == "[Machine]"
+              if in_machine and line.startswith("ROM_File="):
+                  line = f"ROM_File={rom}"
+                  seen = True
+              lines.append(line)
+          if not seen:
+              raise SystemExit("ROM_File key missing from Steem configuration")
+          p.write_text("\n".join(lines) + "\n")
+          PY
+          grep -F "ROM_File=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
           mkdir -p steem-linux/bin/guest-c steem-linux/bin/PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
