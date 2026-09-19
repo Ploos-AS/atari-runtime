@@ -112,10 +112,15 @@ jobs:
           s = p.read_text()
           s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_0_Path=guest-c")
           s = s.replace("DisableHardDrives=1", "DisableHardDrives=0")
+          # Steem's native host-directory hard-drive layer crashes this
+          # Linux port during EmuTOS boot. Use its PRG support instead for
+          # the canonical execution probe.
+          s = s.replace("PRG_support=0", "PRG_support=1")
           p.write_text(s)
           PY
           grep -F 'Drive_0_Path=guest-c' steem-linux/bin/steem.ini
           grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
+          grep -F 'PRG_support=1' steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
         run: |
@@ -144,12 +149,15 @@ jobs:
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
-          # M3.2c first execution attempt: open C: and launch MINIMAL.PRG
-          # using deterministic GEM desktop mouse input.
-          xdotool mousemove --window "$win" 45 62 click --repeat 2 --delay 120 1
+          # M3.2c: invoke Steem's PRG launcher rather than its Linux
+          # host-directory hard-drive layer, which currently panics EmuTOS.
+          # Open the disk/PRG manager from the toolbar and capture evidence
+          # for deterministic PRG selection in the next stage.
+          xdotool mousemove --window "$win" 126 10 click 1
+          sleep 3
+          import -display :99 -window root steem-sse-prg-dialog.png
+          test -s steem-sse-prg-dialog.png
           sleep 2
-          xdotool mousemove --window "$win" 90 92 click --repeat 2 --delay 120 1
-          sleep 5
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
@@ -201,6 +209,7 @@ jobs:
             steem-sse-emutos-sha256.txt
             steem-sse-emutos-boot.png
             steem-sse-emutos-boot.txt
+            steem-sse-prg-dialog.png
             steem-sse-window.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
