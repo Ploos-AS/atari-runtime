@@ -31,6 +31,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build atari-runtime image
         run: docker build -t atari-runtime:m2 -f Containerfile .
+      - name: Install floppy image tools
+        run: sudo apt-get update && sudo apt-get install -y dosfstools mtools
       - name: Download canonical atari-dev M2 artifact
         env:
           GH_TOKEN: ${{ github.token }}
@@ -40,34 +42,19 @@ jobs:
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
-      - name: Probe Hatari program launch modes
+      - name: Execute raw probe from floppy image
         run: |
+          rm -f artifacts/MINPASS.TXT artifacts/M2PROBE.ST
           test -s artifacts/MINIMAL.PRG
-          for mode in auto hostarg; do
-            name="atari-launch-${{ matrix.profile }}-$mode"
-            rm -f "artifacts/launch-$mode-${{ matrix.profile }}.log"
-            if [ "$mode" = auto ]; then
-              launch_args="--auto C:\\MINIMAL.PRG"
-            else
-              launch_args="/runtime/artifacts/MINIMAL.PRG"
-            fi
-            set +e
-            docker run --name "$name" \
-              -v "$PWD/artifacts:/runtime/artifacts" \
-              atari-runtime:m2 \
-              sh -c "xvfb-run -a hatari --machine '${{ matrix.profile }}' --memsize 1 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --run-vbls 1000 $launch_args" \
-              >"artifacts/launch-$mode-${{ matrix.profile }}.log" 2>&1
-            rc=$?
-            set -e
-            echo "=== launch mode=$mode rc=$rc ==="
-            cat "artifacts/launch-$mode-${{ matrix.profile }}.log" || true
-          done
-          echo "=== Hatari launch-related help ==="
-          docker run --rm atari-runtime:m2 sh -c 'hatari --help 2>&1 | grep -Ei "auto|run-vbls|program|harddrive|gemdos" || true'
-      - name: Execute GEMDOS marker probe
-        run: |
-          rm -f artifacts/MINPASS.TXT
-          test -s artifacts/MINIMAL.PRG
+
+          # Build a real FAT12 Atari-compatible floppy image.  This deliberately
+          # avoids Hatari's GEMDOS host-directory mapping as a launch dependency.
+          dd if=/dev/zero of=artifacts/M2PROBE.ST bs=512 count=1440 status=none
+          mkfs.fat -F 12 -n M2PROBE artifacts/M2PROBE.ST
+          mmd -i artifacts/M2PROBE.ST ::/AUTO
+          mcopy -i artifacts/M2PROBE.ST artifacts/MINIMAL.PRG ::/AUTO/MINIMAL.PRG
+          mdir -i artifacts/M2PROBE.ST ::/AUTO
+
           name="atari-m2-${{ matrix.profile }}"
           set +e
           docker run --name "$name" \
@@ -77,66 +64,25 @@ jobs:
               --machine "${{ matrix.profile }}" \
               --memsize 1 \
               --tos /runtime/roms/emutos.img \
+              --disk-a /runtime/artifacts/M2PROBE.ST \
               --harddrive /runtime/artifacts \
               --gemdos-drive C \
-              --trace gemdos,cpu_disasm \
-              --trace-file /runtime/artifacts/hatari-trace-${{ matrix.profile }}.log \
-              --log-level debug \
-              --log-file /runtime/artifacts/hatari-debug-${{ matrix.profile }}.log \
-              --auto 'C:\MINIMAL.PRG' \
+              --run-vbls 1500 \
               >"artifacts/hatari-stdout-${{ matrix.profile }}.log" \
-              2>"artifacts/hatari-stderr-${{ matrix.profile }}.log" &
-          pid=$!
+              2>"artifacts/hatari-stderr-${{ matrix.profile }}.log"
+          rc=$?
           set -e
 
-          found=0
-          exited=0
-          rc=0
-          for i in $(seq 1 45); do
-            if [ -s artifacts/MINPASS.TXT ]; then
-              found=1
-              break
-            fi
-            if ! kill -0 "$pid" 2>/dev/null; then
-              set +e
-              wait "$pid"
-              rc=$?
-              set -e
-              exited=1
-              echo "Hatari/container exited before marker (rc=$rc)"
-              break
-            fi
-            sleep 1
-          done
-
           echo "=== Hatari stderr ==="
-          cat "artifacts/hatari-stderr-${{ matrix.profile }}.log" 2>/dev/null || true
+          cat "artifacts/hatari-stderr-${{ matrix.profile }}.log" || true
           echo "=== Hatari stdout ==="
-          cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" 2>/dev/null || true
-          echo "=== Hatari debug log ==="
-          cat "artifacts/hatari-debug-${{ matrix.profile }}.log" 2>/dev/null || true
-          echo "=== Hatari trace: autostart / GEMDOS / program-load clues ==="
-          grep -Ei 'auto|minimal|gemdos|pexec|load|program' "artifacts/hatari-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 200 || true
-          echo "=== Hatari trace tail ==="
-          tail -n 120 "artifacts/hatari-trace-${{ matrix.profile }}.log" 2>/dev/null || true
-          echo "=== docker logs ==="
-          docker logs "$name" 2>&1 || true
+          cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" || true
+          echo "Hatari rc=$rc"
 
-          if [ "$exited" -eq 0 ]; then
-            docker kill "$name" >/dev/null 2>&1 || true
-            set +e
-            wait "$pid"
-            rc=$?
-            set -e
-          fi
-          docker rm -f "$name" >/dev/null 2>&1 || true
-
-          if [ "$found" -ne 1 ]; then
-            echo "ERROR: marker missing; Hatari/container rc=$rc" >&2
-            exit 1
-          fi
+          test "$rc" -eq 0
+          test -s artifacts/MINPASS.TXT
           grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
-          printf 'GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
+          printf 'Floppy AUTO GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
       - name: Verify Atari-side GEMDOS execution evidence
         run: |
           test -s artifacts/MINPASS.TXT
