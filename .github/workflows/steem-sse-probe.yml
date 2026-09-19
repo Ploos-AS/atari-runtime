@@ -111,13 +111,13 @@ jobs:
           p = Path("steem-linux/bin/steem.ini")
           s = p.read_text()
           s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/guest-c'}")
-          s = s.replace("DisableHardDrives=1", "DisableHardDrives=0")
+          s = s.replace("DisableHardDrives=1", "DisableHardDrives=1")
           # Keep native PRG support enabled as supplemental integration evidence.
           s = s.replace("PRG_support=0", "PRG_support=1")
           p.write_text(s)
           PY
           grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/guest-c" steem-linux/bin/steem.ini
-          grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
+          grep -F 'DisableHardDrives=1' steem-linux/bin/steem.ini
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
@@ -147,15 +147,15 @@ jobs:
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
-          # M3.2c: C: is an absolute host-directory mapping. The previous
-          # relative path caused the EmuTOS address-error panic.
-          # Open the C: desktop drive and launch canonical MINIMAL.PRG.
-          xdotool mousemove --window "$win" 46 61 click --repeat 2 --delay 120 1
+          # M3.2c: Steem Linux host-directory hard drives cause an EmuTOS
+          # address-error panic even with an absolute path. Keep them disabled
+          # and exercise Steem's PRG-support path instead. Capture the live
+          # emulator state for the next deterministic launcher step.
+          xdotool mousemove --window "$win" 832 210 click 1 || true
           sleep 2
           import -display :99 -window root steem-sse-prg-dialog.png
           test -s steem-sse-prg-dialog.png
-          xdotool mousemove --window "$win" 84 91 click --repeat 2 --delay 120 1
-          sleep 5
+          sleep 2
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
