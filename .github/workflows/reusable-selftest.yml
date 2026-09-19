@@ -1,0 +1,45 @@
+name: reusable qualification self-test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/reusable-qualification.yml'
+      - '.github/workflows/reusable-selftest.yml'
+      - 'tools/qualify-m2.sh'
+  workflow_dispatch:
+
+jobs:
+  build-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download canonical atari-dev artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifact
+          curl --fail --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -o /tmp/atari-dev.zip \
+            https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10583492647/zip
+          unzip -q /tmp/atari-dev.zip -d artifact
+          test -s artifact/MINIMAL.PRG
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atari-runtime-selftest-probe
+          path: artifact/MINIMAL.PRG
+          if-no-files-found: error
+
+  qualify-st:
+    needs: build-probe
+    uses: ./.github/workflows/reusable-qualification.yml
+    with:
+      artifact-name: atari-runtime-selftest-probe
+      profile: st
+
+  qualify-ste:
+    needs: build-probe
+    uses: ./.github/workflows/reusable-qualification.yml
+    with:
+      artifact-name: atari-runtime-selftest-probe
+      profile: ste
