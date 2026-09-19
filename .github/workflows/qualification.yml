@@ -42,6 +42,18 @@ jobs:
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           sha256sum artifacts/HELLO.TOS
+      - name: Prove EmuTOS reaches video boot
+        run: |
+          rm -f artifacts/boot-${{ matrix.profile }}.png
+          set +e
+          timeout --signal=TERM --kill-after=5s 20s docker run --name "atari-boot-${{ matrix.profile }}" \
+            -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
+            sh -c 'Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & export DISPLAY=:99; sleep 1; hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 & h=$!; sleep 8; import -display :99 -window root /runtime/artifacts/boot-${{ matrix.profile }}.png; kill "$h" 2>/dev/null || true'
+          rc=$?
+          set -e
+          echo "boot probe rc=$rc"
+          test -s artifacts/boot-${{ matrix.profile }}.png
+          file artifacts/boot-${{ matrix.profile }}.png
       - name: Execute raw probe from floppy image
         run: |
           rm -f artifacts/MINPASS.TXT artifacts/M2PROBE.ST
