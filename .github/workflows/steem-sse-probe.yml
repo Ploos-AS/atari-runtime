@@ -94,14 +94,14 @@ jobs:
               if line.startswith("["):
                   in_options = line.strip() == "[Options]"
               if in_options and line.startswith("NewROMFile="):
-                  line = "NewROMFile=roms/emutos.img"
+                  line = f"NewROMFile={Path.cwd() / 'steem-linux/bin/roms/emutos.img'}"
                   seen_rom = True
               lines.append(line)
           if not seen_rom:
               raise SystemExit("NewROMFile key missing from Steem configuration")
           p.write_text("\n".join(lines) + "\n")
           PY
-          grep -F 'NewROMFile=roms/emutos.img' steem-linux/bin/steem.ini
+          grep -F "NewROMFile=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
           mkdir -p steem-linux/bin/guest-c steem-linux/bin/PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
@@ -182,10 +182,10 @@ jobs:
           # Steem's toolbar (window-relative ~10,10), not at the right edge.
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 2
-          # Fresh Steem profiles show a first-run modal before EmuTOS starts.
-          # Dismiss Continue, then rediscover the live emulator window because
-          # the first-run dialog can destroy/recreate the top-level X11 window.
-          xdotool mousemove 470 433 click 1
+          # Fresh Steem profiles may show setup dialogs before EmuTOS starts.
+          # The ROM path is absolute so Steem should not ask us to locate TOS.
+          # If a modal is present, activate its centered confirmation button.
+          xdotool mousemove 512 452 click 1 || true
           sleep 5
           # After Continue Steem may keep the emulator as an untitled X11
           # window. Discover all visible top-level windows and select the
