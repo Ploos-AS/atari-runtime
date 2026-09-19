@@ -22,6 +22,19 @@ jobs:
           file bin/xsteem64
           sha256sum bin/xsteem64 | tee ../steem-sse-sha256.txt
 
+      - name: Fetch canonical atari-dev runtime probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eux
+          mkdir -p artifacts
+          gh api repos/Ploos-AS/atari-dev/actions/artifacts/10583492647/zip > /tmp/atari-dev.zip
+          unzip -q /tmp/atari-dev.zip -d artifacts
+          probe="$(find artifacts -type f -name MINIMAL.PRG | head -n 1)"
+          test -n "$probe"
+          cp "$probe" artifacts/MINIMAL.PRG
+          test -s artifacts/MINIMAL.PRG
+
       - name: Install runtime dependencies
         run: |
           sudo apt-get update
@@ -88,6 +101,19 @@ jobs:
           PY
           grep -F 'NewROMFile=roms/emutos.img' steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
+          mkdir -p steem-linux/bin/guest-c
+          cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
+          rm -f steem-linux/bin/guest-c/MINPASS.TXT
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("steem-linux/bin/steem.ini")
+          s = p.read_text()
+          s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_0_Path=guest-c")
+          s = s.replace("DisableHardDrives=1", "DisableHardDrives=0")
+          p.write_text(s)
+          PY
+          grep -F 'Drive_0_Path=guest-c' steem-linux/bin/steem.ini
+          grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
         run: |
@@ -116,6 +142,12 @@ jobs:
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
+          # M3.2c first execution attempt: open C: and launch MINIMAL.PRG
+          # using deterministic GEM desktop mouse input.
+          xdotool mousemove --window "$win" 45 62 doubleclick 1
+          sleep 2
+          xdotool mousemove --window "$win" 90 92 doubleclick 1
+          sleep 5
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
@@ -124,6 +156,10 @@ jobs:
           kill "$xvfb_pid" 2>/dev/null || true
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
+          marker='Ploos-AS atari-runtime minimal GEMDOS execution PASS'
+          test -s steem-linux/bin/guest-c/MINPASS.TXT
+          grep -Fx "$marker" steem-linux/bin/guest-c/MINPASS.TXT
+          printf 'guest_marker=PASS\n' | tee -a steem-sse-result.txt
 
       - name: Collect GDB backtrace after startup crash
         if: always()
@@ -168,4 +204,5 @@ jobs:
             steem-sse-stderr.log
             steem-sse-gdb.log
             steem-sse-result.txt
+            steem-linux/bin/guest-c/MINPASS.TXT
           if-no-files-found: error
