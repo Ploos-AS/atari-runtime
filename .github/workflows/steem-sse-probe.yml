@@ -267,6 +267,17 @@ jobs:
             xdotool getwindowgeometry "$tos_dialog" | tee steem-sse-tos-dialog.txt
             xwininfo -tree -id "$tos_dialog" | tee steem-sse-tos-dialog-tree.txt
             xprop -id "$tos_dialog" | tee steem-sse-tos-dialog-xprop.txt
+            # The dialog is a custom-drawn X11 window: its only actionable
+            # child is a 100x25 button at +250+148. Record it explicitly and
+            # probe that button instead of invoking the native file selector.
+            tos_button="$(xwininfo -tree -id "$tos_dialog" | awk '$4 == "100x25+250+148" {print $1; exit}')"
+            if [ -n "$tos_button" ]; then
+              xdotool windowactivate --sync "$tos_dialog" || true
+              xdotool mousemove --window "$tos_dialog" 300 160 click 1
+              sleep 2
+              import -display :99 -window root steem-sse-tos-button-result.png
+              xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null | tee steem-sse-after-tos-button-windows.txt || true
+            fi
             for child in $(xwininfo -tree -id "$tos_dialog" | awk '$1 ~ /^0x[0-9a-f]+$/ {print $1}' | tail -n +2); do
               echo "=== $child ==="
               xwininfo -id "$child" 2>/dev/null || true
