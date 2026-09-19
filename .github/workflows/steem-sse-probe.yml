@@ -25,7 +25,7 @@ jobs:
       - name: Install runtime dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse0 xvfb
+          sudo apt-get install -y libpulse0 xvfb gdb
           test -s steem-linux/libs/libcapsimage.so.5
           mkdir -p "$RUNNER_TEMP/steem-libs"
           cp steem-linux/libs/libcapsimage.so.5 "$RUNNER_TEMP/steem-libs/"
@@ -40,10 +40,13 @@ jobs:
             exit 1
           fi
 
-      - name: Probe startup under Xvfb
+      - name: Probe startup from Steem working directory
         run: |
           set +e
-          xvfb-run -a timeout --signal=TERM --kill-after=2s 12s steem-linux/bin/xsteem64 >steem-sse-stdout.log 2>steem-sse-stderr.log
+          (
+            cd steem-linux/bin
+            xvfb-run -a timeout --signal=TERM --kill-after=2s 12s ./xsteem64
+          ) >steem-sse-stdout.log 2>steem-sse-stderr.log
           rc=$?
           set -e
           cat steem-sse-stdout.log || true
@@ -51,8 +54,33 @@ jobs:
           printf 'exit_code=%s\n' "$rc" | tee steem-sse-result.txt
           case "$rc" in
             0|124|137|143) ;;
+            139)
+              echo 'Steem SSE segfaulted; collecting debugger evidence.' >&2
+              ;;
             *) exit "$rc" ;;
           esac
+
+      - name: Collect GDB backtrace after startup crash
+        if: always()
+        run: |
+          if grep -Fxq 'exit_code=139' steem-sse-result.txt 2>/dev/null; then
+            Xvfb :99 -screen 0 1024x768x24 >/tmp/steem-xvfb.log 2>&1 &
+            xvfb_pid=$!
+            export DISPLAY=:99
+            sleep 1
+            set +e
+            (
+              cd steem-linux/bin
+              timeout --signal=TERM --kill-after=2s 15s gdb --batch                 -ex 'set pagination off'                 -ex run                 -ex 'thread apply all bt full'                 --args ./xsteem64
+            ) >steem-sse-gdb.log 2>&1
+            gdb_rc=$?
+            set -e
+            kill "$xvfb_pid" 2>/dev/null || true
+            wait "$xvfb_pid" 2>/dev/null || true
+            printf 'gdb_exit_code=%s\n' "$gdb_rc" >> steem-sse-result.txt
+            cat steem-sse-gdb.log
+            exit 1
+          fi
 
       - name: Upload probe evidence
         if: always()
@@ -66,5 +94,6 @@ jobs:
             steem-sse-ldd.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
+            steem-sse-gdb.log
             steem-sse-result.txt
           if-no-files-found: warn
