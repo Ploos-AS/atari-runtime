@@ -23,10 +23,19 @@
 
 Physical Atari hardware is not required. Emulator qualification is authoritative for this project.
 
-## M3 — Automated emulator matrix — NEXT
+## M3 — Automated emulator matrix
+
+### M3.1 — Reusable consumer qualification — PASS
+- reusable GitHub Actions workflow for consumer projects
+- canonical atari-dev artifact hand-off
+- ST and STE guest execution qualification
+- machine-readable evidence and guest marker verification
+- evidence artifact upload
+- self-test run #1 PASS on both profiles
+
+### M3.2 — Steem SSE cross-emulator qualification — NEXT
 - keep Hatari + EmuTOS as the authoritative baseline
 - retain ST and STE profiles
-- reusable consumer workflow
 - persistent machine-readable qualification evidence
 - retain useful emulator logs/traces
 - add Steem SSE as an independent ST/STE cross-emulator
