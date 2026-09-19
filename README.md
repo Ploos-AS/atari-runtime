@@ -6,7 +6,7 @@ Standard containerized Atari runtime and qualification environment for Ploos-AS 
 
 `atari-runtime` executes and qualifies Atari ST-family software built by [Ploos-AS/atari-dev](https://github.com/Ploos-AS/atari-dev).
 
-M2 defines the hand-off for a real TOS executable: `atari-dev` produces `HELLO.TOS`, and this runtime stages that exact artifact for emulator qualification.
+The M2 contract uses the canonical `MINIMAL.PRG` runtime probe produced by `atari-dev`. CI executes that program under Hatari + EmuTOS and requires guest-side GEMDOS evidence in `C:\\MINPASS.TXT`.
 
 ## Qualification policy
 
@@ -18,31 +18,39 @@ Baseline target: Hatari + EmuTOS. Cross-emulator target: the same artifact also 
 
 - **M0 — Foundation — PASS**
 - **M1 — Hatari infrastructure — PASS**
-- **M2 — TOS artifact qualification — IMPLEMENTED / runtime evidence pending**
+- **M2 — TOS runtime qualification — PASS**
+- **M3 — Automated emulator matrix — NEXT**
+
+M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS.
 
 ## M2 qualification
 
-Place the application at:
+The canonical runtime artifact is:
 
 ```
-/runtime/artifacts/HELLO.TOS
+/runtime/artifacts/MINIMAL.PRG
 ```
 
-and a legally obtained TOS image, when required, at:
+The container includes the freely redistributable EmuTOS image used by CI:
 
 ```
-/runtime/roms/tos.img
+/runtime/roms/emutos.img
 ```
 
-Run:
+Run the helper with a mounted artifact directory:
 
 ```sh
 tools/qualify-m2.sh st
+tools/qualify-m2.sh ste
 ```
 
-The helper validates the artifact and ROM contract and then launches the configured ST/STE profile. ROM files remain external and are never distributed by this repository or image.
+A PASS requires `MINIMAL.PRG` to execute inside the emulated Atari and create `MINPASS.TXT` containing:
 
-Current CI remains ROM-free until the EmuTOS path is integrated. The target is fully automated Hatari + EmuTOS execution without proprietary Atari ROM material.
+```
+Ploos-AS atari-runtime minimal GEMDOS execution PASS
+```
+
+Merely booting EmuTOS or locating the executable is not sufficient.
 
 ## Profiles
 
