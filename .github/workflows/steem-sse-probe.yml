@@ -201,7 +201,12 @@ jobs:
               fi
             done
             test -n "$button"
-            xdotool click --window "$button" 1
+            # xdotool's --window click is unreliable for these custom HXC
+            # controls. Move into the child window and issue a normal click.
+            xdotool mousemove --window "$button" 50 12
+            xdotool mousedown 1
+            sleep 0.2
+            xdotool mouseup 1
           fi
           sleep 5
           # After Continue Steem may keep the emulator as an untitled X11
