@@ -187,7 +187,30 @@ jobs:
           # the first-run dialog can destroy/recreate the top-level X11 window.
           xdotool mousemove 470 433 click 1
           sleep 5
-          win="$(xdotool search --onlyvisible --name 'Steem' | tail -n 1 || true)"
+          # After Continue Steem may keep the emulator as an untitled X11
+          # window. Discover all visible top-level windows and select the
+          # largest one rather than relying on a title.
+          xdotool search --onlyvisible --name '.*' | while read -r wid; do
+            name="$(xdotool getwindowname "$wid" 2>/dev/null || true)"
+            geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null || true)"
+            printf 'WINDOW %s %s\\n%s\\n' "$wid" "$name" "$geom"
+          done | tee steem-sse-visible-windows-after-first-run.txt
+          win="$(python3 - <<'PY'
+import subprocess
+best = (0, "")
+ids = subprocess.check_output(["xdotool","search","--onlyvisible","--name",".*"], text=True).split()
+for wid in ids:
+    try:
+        g = subprocess.check_output(["xdotool","getwindowgeometry",wid], text=True)
+        line = next(x for x in g.splitlines() if "Geometry:" in x)
+        w,h = map(int, line.split("Geometry:")[1].strip().split("x"))
+        if w*h > best[0]:
+            best = (w*h, wid)
+    except Exception:
+        pass
+print(best[1])
+PY
+)"
           test -n "$win"
           xdotool windowraise "$win" || true
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
