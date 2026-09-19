@@ -22,22 +22,26 @@ jobs:
           file bin/xsteem64
           sha256sum bin/xsteem64 | tee ../steem-sse-sha256.txt
 
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0 xvfb
+          test -s steem-linux/libs/libcapsimage.so.5
+          mkdir -p "$RUNNER_TEMP/steem-libs"
+          cp steem-linux/libs/libcapsimage.so.5 "$RUNNER_TEMP/steem-libs/"
+          sha256sum "$RUNNER_TEMP/steem-libs/libcapsimage.so.5" | tee steem-sse-capsimage-sha256.txt
+          echo "LD_LIBRARY_PATH=$RUNNER_TEMP/steem-libs" >> "$GITHUB_ENV"
+
       - name: Inspect dynamic dependencies
         run: |
-          set +e
           ldd steem-linux/bin/xsteem64 | tee steem-sse-ldd.txt
-          rc=$?
-          set -e
           if grep -q 'not found' steem-sse-ldd.txt; then
-            echo 'Steem SSE has unresolved shared libraries on the stock runner.' >&2
+            echo 'Steem SSE still has unresolved shared libraries.' >&2
             exit 1
           fi
-          exit "$rc"
 
       - name: Probe startup under Xvfb
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb
           set +e
           xvfb-run -a timeout --signal=TERM --kill-after=2s 12s steem-linux/bin/xsteem64 >steem-sse-stdout.log 2>steem-sse-stderr.log
           rc=$?
@@ -58,6 +62,7 @@ jobs:
           path: |
             steem-sse-revision.txt
             steem-sse-sha256.txt
+            steem-sse-capsimage-sha256.txt
             steem-sse-ldd.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
