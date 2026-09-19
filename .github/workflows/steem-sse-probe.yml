@@ -113,9 +113,33 @@ jobs:
           s = p.read_text()
           s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/guest-c'}")
           s = s.replace("DisableHardDrives=1", "DisableHardDrives=1")
-          # Keep native PRG support enabled as supplemental integration evidence.
           s = s.replace("PRG_support=0", "PRG_support=1")
-          p.write_text(s)
+          lines = s.splitlines()
+          out = []
+          in_harddrives = False
+          seen_letter = False
+          seen_path = False
+          for line in lines:
+              if line.startswith("[") and line.endswith("]"):
+                  if in_harddrives:
+                      if not seen_letter:
+                          out.append("Drive_3_Letter=Z")
+                      if not seen_path:
+                          out.append(f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
+                  in_harddrives = line == "[HardDrives]"
+              if in_harddrives and line.startswith("Drive_3_Letter="):
+                  line = "Drive_3_Letter=Z"
+                  seen_letter = True
+              elif in_harddrives and line.startswith("Drive_3_Path="):
+                  line = f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}"
+                  seen_path = True
+              out.append(line)
+          if in_harddrives:
+              if not seen_letter:
+                  out.append("Drive_3_Letter=Z")
+              if not seen_path:
+                  out.append(f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
+          p.write_text("\\n".join(out) + "\\n")
           PY
           grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/guest-c" steem-linux/bin/steem.ini
           grep -F 'DisableHardDrives=1' steem-linux/bin/steem.ini
