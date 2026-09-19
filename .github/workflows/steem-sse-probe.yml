@@ -25,7 +25,7 @@ jobs:
       - name: Install runtime dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse0 xvfb gdb
+          sudo apt-get install -y libpulse0 xvfb gdb xfonts-base xfonts-75dpi xfonts-100dpi
           test -s steem-linux/libs/libcapsimage.so.5
           mkdir -p "$RUNNER_TEMP/steem-libs"
           cp steem-linux/libs/libcapsimage.so.5 "$RUNNER_TEMP/steem-libs/"
@@ -37,6 +37,15 @@ jobs:
           ldd steem-linux/bin/xsteem64 | tee steem-sse-ldd.txt
           if grep -q 'not found' steem-sse-ldd.txt; then
             echo 'Steem SSE still has unresolved shared libraries.' >&2
+            exit 1
+          fi
+
+      - name: Verify X11 font resources
+        run: |
+          xvfb-run -a sh -c 'xlsfonts | tee x11-fonts.txt; test "$(xlsfonts | wc -l)" -gt 0'
+          grep -E '(^8x13$|helvetica|lucida|palatino)' x11-fonts.txt | head -50 | tee x11-font-candidates.txt || true
+          if ! grep -Eq '(^8x13$|helvetica|lucida|palatino)' x11-fonts.txt; then
+            echo 'No Steem-compatible X11 core font candidate found.' >&2
             exit 1
           fi
 
@@ -92,6 +101,8 @@ jobs:
             steem-sse-sha256.txt
             steem-sse-capsimage-sha256.txt
             steem-sse-ldd.txt
+            x11-fonts.txt
+            x11-font-candidates.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-gdb.log
