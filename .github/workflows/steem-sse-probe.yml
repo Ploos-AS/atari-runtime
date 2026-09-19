@@ -1,0 +1,65 @@
+name: steem-sse integration probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/steem-sse-probe.yml'
+      - 'docs/M3_2_STEEM_SSE.md'
+
+jobs:
+  linux-startup:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fetch pinned Steem SSE Linux binary
+        run: |
+          set -eux
+          git clone --depth 1 --branch ubuntu https://github.com/gsidh761/SteamSSELinux.git steem-linux
+          cd steem-linux
+          git rev-parse HEAD | tee ../steem-sse-revision.txt
+          test -s bin/xsteem64
+          chmod +x bin/xsteem64
+          file bin/xsteem64
+          sha256sum bin/xsteem64 | tee ../steem-sse-sha256.txt
+
+      - name: Inspect dynamic dependencies
+        run: |
+          set +e
+          ldd steem-linux/bin/xsteem64 | tee steem-sse-ldd.txt
+          rc=$?
+          set -e
+          if grep -q 'not found' steem-sse-ldd.txt; then
+            echo 'Steem SSE has unresolved shared libraries on the stock runner.' >&2
+            exit 1
+          fi
+          exit "$rc"
+
+      - name: Probe startup under Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          set +e
+          xvfb-run -a timeout --signal=TERM --kill-after=2s 12s steem-linux/bin/xsteem64 >steem-sse-stdout.log 2>steem-sse-stderr.log
+          rc=$?
+          set -e
+          cat steem-sse-stdout.log || true
+          cat steem-sse-stderr.log || true
+          printf 'exit_code=%s\n' "$rc" | tee steem-sse-result.txt
+          case "$rc" in
+            0|124|137|143) ;;
+            *) exit "$rc" ;;
+          esac
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: steem-sse-linux-probe
+          path: |
+            steem-sse-revision.txt
+            steem-sse-sha256.txt
+            steem-sse-ldd.txt
+            steem-sse-stdout.log
+            steem-sse-stderr.log
+            steem-sse-result.txt
+          if-no-files-found: warn
