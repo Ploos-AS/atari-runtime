@@ -216,8 +216,10 @@ jobs:
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
           marker='Ploos-AS atari-runtime minimal GEMDOS execution PASS'
-          test -s steem-linux/bin/guest-c/MINPASS.TXT
-          grep -Fx "$marker" steem-linux/bin/guest-c/MINPASS.TXT
+          # The documented Steem PRG launcher maps the PRG directory as Z:.
+          # A relative guest output therefore lands beside AUTORUN.PRG.
+          test -s steem-linux/bin/PRG/MINPASS.TXT
+          grep -Fx "$marker" steem-linux/bin/PRG/MINPASS.TXT
           printf 'guest_marker=PASS\n' | tee -a steem-sse-result.txt
 
       - name: Collect GDB backtrace after startup crash
@@ -265,5 +267,5 @@ jobs:
             steem-sse-stderr.log
             steem-sse-gdb.log
             steem-sse-result.txt
-            steem-linux/bin/guest-c/MINPASS.TXT
+            steem-linux/bin/PRG/MINPASS.TXT
           if-no-files-found: error
