@@ -298,6 +298,12 @@ jobs:
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
+          # steem_pid is the strace wrapper; terminating only it can leave
+          # xsteem64 alive and keep the Actions step open. Stop the traced
+          # emulator first, then reap the wrapper.
+          pkill -TERM -f '/xsteem64' 2>/dev/null || true
+          sleep 1
+          pkill -KILL -f '/xsteem64' 2>/dev/null || true
           kill "$steem_pid" 2>/dev/null || true
           wait "$steem_pid" 2>/dev/null || true
           kill "$xvfb_pid" 2>/dev/null || true
