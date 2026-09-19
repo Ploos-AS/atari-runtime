@@ -195,14 +195,25 @@ jobs:
             geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null || true)"
             printf 'WINDOW %s %s\\n%s\\n' "$wid" "$name" "$geom"
           done | tee steem-sse-visible-windows-after-first-run.txt
-          win="$(for wid in $(xdotool search --onlyvisible --name '.*'); do
-            geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null | awk '/Geometry:/ {print $2}')"
-            w="${geom%x*}"
-            h="${geom#*x}"
-            if [ -n "$w" ] && [ -n "$h" ]; then
-              printf '%s %s\\n' "$((w*h))" "$wid"
-            fi
-          done | sort -nr | head -n 1 | awk '{print $2}')"
+          # Prefer the actual Steem/X11 window class. The X root window
+          # is also returned by xdotool and must never be selected.
+          win=""
+          for wid in $(xdotool search --onlyvisible --name '.*'); do
+            cls="$(xdotool getwindowclassname "$wid" 2>/dev/null || true)"
+            name="$(xdotool getwindowname "$wid" 2>/dev/null || true)"
+            printf 'CANDIDATE %s class=%s name=%s\\n' "$wid" "$cls" "$name"
+            case "$cls $name" in
+              *Steem*|*steem*|*xsteem*|*STEEM*)
+                win="$wid"
+                break
+                ;;
+            esac
+          done
+          # If Steem has an untitled class, use the TOS Image child only as a
+          # deterministic fallback; never select the X root (window 543).
+          if [ -z "$win" ]; then
+            win="$(xdotool search --onlyvisible --name 'TOS Image' | head -n 1 || true)"
+          fi
 
           test -n "$win"
           xdotool windowraise "$win" || true
