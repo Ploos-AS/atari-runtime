@@ -54,8 +54,10 @@ jobs:
               --tos /runtime/roms/emutos.img \
               --harddrive /runtime/artifacts \
               --gemdos-drive C \
-              --trace gemdos \
-              --trace-file /runtime/artifacts/hatari-gemdos-${{ matrix.profile }}.log \
+              --trace gemdos,cpu_disasm \
+              --trace-file /runtime/artifacts/hatari-trace-${{ matrix.profile }}.log \
+              --log-level debug \
+              --log-file /runtime/artifacts/hatari-debug-${{ matrix.profile }}.log \
               --auto 'C:\MINIMAL.PRG' &
           pid=$!
 
