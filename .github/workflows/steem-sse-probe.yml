@@ -32,7 +32,9 @@ jobs:
           unzip -q /tmp/atari-dev.zip -d artifacts
           probe="$(find artifacts -type f -name MINIMAL.PRG | head -n 1)"
           test -n "$probe"
-          cp "$probe" artifacts/MINIMAL.PRG
+          if [ "$probe" != "artifacts/MINIMAL.PRG" ]; then
+            cp "$probe" artifacts/MINIMAL.PRG
+          fi
           test -s artifacts/MINIMAL.PRG
 
       - name: Install runtime dependencies
