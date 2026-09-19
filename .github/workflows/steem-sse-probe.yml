@@ -103,9 +103,10 @@ jobs:
           PY
           grep -F 'NewROMFile=roms/emutos.img' steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
-          mkdir -p steem-linux/bin/guest-c
+          mkdir -p steem-linux/bin/guest-c steem-linux/bin/PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
-          rm -f steem-linux/bin/guest-c/MINPASS.TXT
+          cp artifacts/MINIMAL.PRG steem-linux/bin/PRG/MINIMAL.PRG
+          rm -f steem-linux/bin/guest-c/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
@@ -119,6 +120,8 @@ jobs:
           grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/guest-c" steem-linux/bin/steem.ini
           grep -F 'DisableHardDrives=1' steem-linux/bin/steem.ini
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
+          grep -F 'Drive_3_Letter=Z' steem-linux/bin/steem.ini
+          grep -F "Drive_3_Path=$GITHUB_WORKSPACE/steem-linux/bin/PRG" steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
         run: |
