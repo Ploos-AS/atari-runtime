@@ -49,10 +49,24 @@ jobs:
             exit 1
           fi
 
+      - name: Provision canonical EmuTOS ROM
+        env:
+          EMUTOS_VERSION: '1.4'
+          EMUTOS_URL: https://downloads.sourceforge.net/project/emutos/emutos/1.4/emutos-512k-1.4.zip
+        run: |
+          set -eux
+          mkdir -p roms /tmp/emutos
+          curl --fail --location --show-error --silent -o /tmp/emutos.zip "$EMUTOS_URL"
+          unzip -q /tmp/emutos.zip -d /tmp/emutos
+          rom="$(find /tmp/emutos -type f -name 'etos*.img' | head -n 1)"
+          test -n "$rom"
+          cp "$rom" roms/emutos.img
+          test -s roms/emutos.img
+          printf 'emutos_version=%s\n' "$EMUTOS_VERSION" | tee steem-sse-emutos-version.txt
+
       - name: Configure EmuTOS boot probe
         run: |
           set -eux
-          test -s roms/emutos.img
           cp roms/emutos.img steem-linux/bin/roms/emutos.img
           python3 - <<'PY'
           from pathlib import Path
@@ -129,6 +143,7 @@ jobs:
             steem-sse-ldd.txt
             x11-fonts.txt
             x11-font-candidates.txt
+            steem-sse-emutos-version.txt
             steem-sse-emutos-sha256.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
