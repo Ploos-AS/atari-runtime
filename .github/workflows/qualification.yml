@@ -56,7 +56,11 @@ jobs:
             sh -c 'Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & export DISPLAY=:99; sleep 1; hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 & h=$!; sleep 8; cp /tmp/xvfb.log /runtime/artifacts/xvfb-${{ matrix.profile }}.log; cp /tmp/hatari.log /runtime/artifacts/boot-hatari-${{ matrix.profile }}.log; kill "$h" 2>/dev/null || true; wait "$h" 2>/dev/null || true'
           cat artifacts/xvfb-${{ matrix.profile }}.log || true
           cat artifacts/boot-hatari-${{ matrix.profile }}.log || true
-          test -s artifacts/boot-hatari-${{ matrix.profile }}.log
+          test -e artifacts/boot-hatari-${{ matrix.profile }}.log
+          if grep -Eqi 'fatal|cannot open.*tos|no tos|failed to.*tos' artifacts/boot-hatari-${{ matrix.profile }}.log; then
+            echo "ERROR: Hatari reported a fatal TOS boot error" >&2
+            exit 1
+          fi
           printf 'EmuTOS boot window %s: PASS\n' "${{ matrix.profile }}"
 
       - name: Execute raw probe from floppy image
