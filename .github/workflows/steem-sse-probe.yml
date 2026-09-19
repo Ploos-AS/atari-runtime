@@ -267,7 +267,7 @@ jobs:
             xdotool getwindowgeometry "$tos_dialog" | tee steem-sse-tos-dialog.txt
             xwininfo -tree -id "$tos_dialog" | tee steem-sse-tos-dialog-tree.txt
             xprop -id "$tos_dialog" | tee steem-sse-tos-dialog-xprop.txt
-            for child in $(xwininfo -tree -id "$tos_dialog" | awk '/0x[0-9a-f]+/ {print $1}' | tail -n +2); do
+            for child in $(xwininfo -tree -id "$tos_dialog" | awk '$1 ~ /^0x[0-9a-f]+$/ {print $1}' | tail -n +2); do
               echo "=== $child ==="
               xwininfo -id "$child" 2>/dev/null || true
               xprop -id "$child" 2>/dev/null || true
