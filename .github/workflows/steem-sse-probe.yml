@@ -197,7 +197,10 @@ jobs:
             for wid in $(xdotool search --onlyvisible --name '.*'); do
               size="$(xdotool getwindowgeometry "$wid" 2>/dev/null | awk '/Geometry:/ {print $2}')"
               if [ "$size" = "100x25" ]; then
+                # The first 100x25 child is Continue. The second is Exit;
+                # selecting the latter caused Steem to save state and exit(1).
                 button="$wid"
+                break
               fi
             done
             test -n "$button"
