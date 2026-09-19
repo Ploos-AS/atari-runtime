@@ -68,8 +68,12 @@ jobs:
             sleep 1
           done
 
-          echo "=== GEMDOS trace ==="
-          cat "artifacts/hatari-gemdos-${{ matrix.profile }}.log" 2>/dev/null || true
+          echo "=== Hatari debug log ==="
+          cat "artifacts/hatari-debug-${{ matrix.profile }}.log" 2>/dev/null || true
+          echo "=== Hatari trace: autostart / GEMDOS / program-load clues ==="
+          grep -Ei 'auto|minimal|gemdos|pexec|load|program' "artifacts/hatari-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 200 || true
+          echo "=== Hatari trace tail ==="
+          tail -n 120 "artifacts/hatari-trace-${{ matrix.profile }}.log" 2>/dev/null || true
           echo "=== docker logs ==="
           docker logs "$name" 2>&1 || true
           docker kill "$name" >/dev/null 2>&1 || true
