@@ -45,6 +45,7 @@ jobs:
           rm -f artifacts/MINPASS.TXT
           test -s artifacts/MINIMAL.PRG
           name="atari-m2-${{ matrix.profile }}"
+          set +e
           docker run --name "$name" \
             -v "$PWD/artifacts:/runtime/artifacts" \
             atari-runtime:m2 \
@@ -58,18 +59,36 @@ jobs:
               --trace-file /runtime/artifacts/hatari-trace-${{ matrix.profile }}.log \
               --log-level debug \
               --log-file /runtime/artifacts/hatari-debug-${{ matrix.profile }}.log \
-              --auto 'C:\MINIMAL.PRG' &
+              --auto 'C:\MINIMAL.PRG' \
+              >"artifacts/hatari-stdout-${{ matrix.profile }}.log" \
+              2>"artifacts/hatari-stderr-${{ matrix.profile }}.log" &
           pid=$!
+          set -e
 
           found=0
+          exited=0
+          rc=0
           for i in $(seq 1 45); do
             if [ -s artifacts/MINPASS.TXT ]; then
               found=1
               break
             fi
+            if ! kill -0 "$pid" 2>/dev/null; then
+              set +e
+              wait "$pid"
+              rc=$?
+              set -e
+              exited=1
+              echo "Hatari/container exited before marker (rc=$rc)"
+              break
+            fi
             sleep 1
           done
 
+          echo "=== Hatari stderr ==="
+          cat "artifacts/hatari-stderr-${{ matrix.profile }}.log" 2>/dev/null || true
+          echo "=== Hatari stdout ==="
+          cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" 2>/dev/null || true
           echo "=== Hatari debug log ==="
           cat "artifacts/hatari-debug-${{ matrix.profile }}.log" 2>/dev/null || true
           echo "=== Hatari trace: autostart / GEMDOS / program-load clues ==="
@@ -78,11 +97,20 @@ jobs:
           tail -n 120 "artifacts/hatari-trace-${{ matrix.profile }}.log" 2>/dev/null || true
           echo "=== docker logs ==="
           docker logs "$name" 2>&1 || true
-          docker kill "$name" >/dev/null 2>&1 || true
-          wait "$pid" || true
+
+          if [ "$exited" -eq 0 ]; then
+            docker kill "$name" >/dev/null 2>&1 || true
+            set +e
+            wait "$pid"
+            rc=$?
+            set -e
+          fi
           docker rm -f "$name" >/dev/null 2>&1 || true
 
-          test "$found" -eq 1
+          if [ "$found" -ne 1 ]; then
+            echo "ERROR: marker missing; Hatari/container rc=$rc" >&2
+            exit 1
+          fi
           grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
           printf 'GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
       - name: Verify Atari-side GEMDOS execution evidence
