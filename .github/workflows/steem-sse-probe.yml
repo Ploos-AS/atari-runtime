@@ -124,6 +124,28 @@ jobs:
           p.write_text("\n".join(lines) + "\n")
           PY
           grep -F "ROM_File=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" steem-linux/bin/steem.ini
+          # Steem's first-run ROM chooser also scans ROM_Add_Dir. Point it at
+          # the directory containing only our canonical open EmuTOS image.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("steem-linux/bin/steem.ini")
+          s = p.read_text()
+          romdir = str(Path.cwd() / "steem-linux/bin/roms")
+          lines = []
+          in_machine = False
+          seen = False
+          for line in s.splitlines():
+              if line.startswith("["):
+                  in_machine = line.strip() == "[Machine]"
+              if in_machine and line.startswith("ROM_Add_Dir="):
+                  line = f"ROM_Add_Dir={romdir}"
+                  seen = True
+              lines.append(line)
+          if not seen:
+              raise SystemExit("ROM_Add_Dir key missing from Steem configuration")
+          p.write_text("\n".join(lines) + "\n")
+          PY
+          grep -F "ROM_Add_Dir=$GITHUB_WORKSPACE/steem-linux/bin/roms" steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
           mkdir -p steem-linux/bin/guest-c steem-linux/bin/PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
