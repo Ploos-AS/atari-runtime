@@ -183,10 +183,15 @@ jobs:
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 2
           # Fresh Steem profiles show a first-run modal before EmuTOS starts.
-          # The evidence image from probe #29 proved the previous "boot"
-          # screenshot was actually this modal. Dismiss Continue deterministically.
+          # Dismiss Continue, then rediscover the live emulator window because
+          # the first-run dialog can destroy/recreate the top-level X11 window.
           xdotool mousemove 470 433 click 1
-          sleep 12
+          sleep 5
+          win="$(xdotool search --onlyvisible --name 'Steem' | tail -n 1 || true)"
+          test -n "$win"
+          xdotool windowraise "$win" || true
+          xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
+          sleep 7
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the guest desktop directly. Z: is the only
           # assigned hard drive in this probe. Open it and launch the
