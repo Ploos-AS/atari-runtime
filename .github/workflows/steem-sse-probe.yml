@@ -182,10 +182,14 @@ jobs:
           # Steem's toolbar (window-relative ~10,10), not at the right edge.
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 2
-          # Fresh Steem profiles may show setup dialogs before EmuTOS starts.
-          # The ROM path is absolute so Steem should not ask us to locate TOS.
-          # If a modal is present, activate its centered confirmation button.
-          xdotool mousemove 512 452 click 1 || true
+          # Fresh Steem profiles show a 400x150 "Welcome to Steem SSE"
+          # modal. Its Continue button is the 100x25 child at the lower right
+          # of the dialog. Click relative to the modal so Xvfb placement does
+          # not matter.
+          welcome="$(xdotool search --onlyvisible --name 'Welcome to Steem SSE' | head -n 1 || true)"
+          if [ -n "$welcome" ]; then
+            xdotool mousemove --window "$welcome" 330 125 click 1
+          fi
           sleep 5
           # After Continue Steem may keep the emulator as an untitled X11
           # window. Discover all visible top-level windows and select the
@@ -204,8 +208,10 @@ jobs:
             printf 'CANDIDATE %s class=%s name=%s\\n' "$wid" "$cls" "$name"
             case "$cls $name" in
               *Steem*|*steem*|*xsteem*|*STEEM*)
-                win="$wid"
-                break
+                case "$name" in
+                  "Welcome to Steem SSE") ;;
+                  *) win="$wid"; break ;;
+                esac
                 ;;
             esac
           done
