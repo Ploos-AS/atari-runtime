@@ -1,0 +1,60 @@
+name: Atari runtime qualification
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: Artifact name produced by the caller and containing MINIMAL.PRG
+        required: true
+        type: string
+      profile:
+        description: Atari machine profile (st or ste)
+        required: false
+        default: st
+        type: string
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout atari-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: Ploos-AS/atari-runtime
+          path: atari-runtime
+
+      - name: Download caller artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: artifacts
+
+      - name: Validate canonical runtime probe
+        run: test -s artifacts/MINIMAL.PRG
+
+      - name: Build atari-runtime image
+        run: docker build -t atari-runtime:m3 -f atari-runtime/Containerfile atari-runtime
+
+      - name: Qualify guest execution
+        run: |
+          docker run --rm \
+            -v "$PWD/artifacts:/runtime/artifacts" \
+            atari-runtime:m3 \
+            tools/qualify-m2.sh "${{ inputs.profile }}"
+
+      - name: Verify machine-readable evidence
+        run: |
+          test -s artifacts/m2-result.txt
+          grep -Fx 'status=PASS' artifacts/m2-result.txt
+          grep -Fx "profile=${{ inputs.profile }}" artifacts/m2-result.txt
+          grep -Fx 'emulator=hatari' artifacts/m2-result.txt
+          grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
+
+      - name: Upload qualification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: atari-runtime-${{ inputs.profile }}-evidence
+          path: |
+            artifacts/m2-result.txt
+            artifacts/MINPASS.TXT
+          if-no-files-found: error
