@@ -102,9 +102,16 @@ jobs:
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
           sleep 3
-          # Steem SSE documents F12 as the start/stop-emulation shortcut.
-          # Use X11 input so CI exercises the same public control as a user.
-          xdotool key F12
+          # Focus Steem's main window and activate its visible Run control.
+          # The Linux port did not react to an unfocused F12 event in CI.
+          win="$(xdotool search --onlyvisible --name 'Steem' | head -n 1)"
+          test -n "$win"
+          xdotool windowactivate --sync "$win"
+          xdotool windowraise "$win"
+          sleep 1
+          # Run/play control is in the upper-right toolbar of the 640x480 Steem UI.
+          eval "$(xdotool getwindowgeometry --shell "$win")"
+          xdotool mousemove --window "$win" 610 28 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
           test -s steem-sse-emutos-boot.png
