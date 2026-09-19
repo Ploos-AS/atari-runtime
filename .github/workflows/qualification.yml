@@ -52,7 +52,9 @@ jobs:
               --machine "${{ matrix.profile }}" \
               --memsize 1 \
               --tos /runtime/roms/emutos.img \
-              /runtime/artifacts/MINIMAL.PRG &
+              --harddrive /runtime/artifacts \
+              --gemdos-drive C \
+              --auto 'C:\MINIMAL.PRG' &
           pid=$!
 
           found=0
