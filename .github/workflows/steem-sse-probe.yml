@@ -188,7 +188,20 @@ jobs:
           # not matter.
           welcome="$(xdotool search --onlyvisible --name 'Welcome to Steem SSE' | head -n 1 || true)"
           if [ -n "$welcome" ]; then
-            xdotool mousemove --window "$welcome" 330 125 click 1
+            # The two 100x25 child windows are the modal buttons. Click the
+            # right-most child rather than guessing coordinates in the parent.
+            button="$(for wid in $(xdotool search --onlyvisible --name '.*'); do
+              parent="$(xdotool getwindowfocus 2>/dev/null || true)"
+              geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null || true)"
+              size="$(printf '%s\\n' "$geom" | awk '/Geometry:/ {print $2}')"
+              pos="$(printf '%s\\n' "$geom" | awk '/Position:/ {print $2}' | tr -d '()')"
+              if [ "$size" = "100x25" ] && [ -n "$pos" ]; then
+                x="${pos%,*}"
+                printf '%s %s\\n' "$x" "$wid"
+              fi
+            done | sort -nr | head -n 1 | awk '{print $2}')"
+            test -n "$button"
+            xdotool click --window "$button" 1
           fi
           sleep 5
           # After Continue Steem may keep the emulator as an untitled X11
