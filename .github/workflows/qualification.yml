@@ -51,9 +51,9 @@ jobs:
       - name: Prove EmuTOS reaches video boot
         run: |
           rm -f artifacts/xvfb-${{ matrix.profile }}.log artifacts/boot-hatari-${{ matrix.profile }}.log
-          timeout --signal=TERM --kill-after=5s 20s docker run --name "atari-boot-${{ matrix.profile }}" \
+          docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & export DISPLAY=:99; sleep 1; hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 & h=$!; sleep 8; cp /tmp/xvfb.log /runtime/artifacts/xvfb-${{ matrix.profile }}.log; cp /tmp/hatari.log /runtime/artifacts/boot-hatari-${{ matrix.profile }}.log; kill "$h" 2>/dev/null || true; wait "$h" 2>/dev/null || true'
+            sh -c 'set -eu; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 8s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 || rc=$?; rc=${rc:-0}; cp /tmp/xvfb.log /runtime/artifacts/xvfb-${{ matrix.profile }}.log; cp /tmp/hatari.log /runtime/artifacts/boot-hatari-${{ matrix.profile }}.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; case "$rc" in 0|124|137) exit 0 ;; *) exit "$rc" ;; esac'
           cat artifacts/xvfb-${{ matrix.profile }}.log || true
           cat artifacts/boot-hatari-${{ matrix.profile }}.log || true
           test -e artifacts/boot-hatari-${{ matrix.profile }}.log
