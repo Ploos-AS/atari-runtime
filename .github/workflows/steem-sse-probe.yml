@@ -147,12 +147,12 @@ jobs:
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
-          # M3.2c: Steem Linux host-directory hard drives cause an EmuTOS
-          # address-error panic even with an absolute path. Keep them disabled
-          # and exercise Steem's PRG-support path instead. Capture the live
-          # emulator state for the next deterministic launcher step.
-          xdotool mousemove --window "$win" 832 210 click 1 || true
-          sleep 2
+          # M3.2c: with host hard drives disabled EmuTOS boots cleanly.
+          # Steem's PRG support is exposed through the disk manager. Open the
+          # far-right toolbar control using window-relative coordinates and
+          # retain the resulting UI as evidence before automating selection.
+          xdotool mousemove --window "$win" 630 10 click 1
+          sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
           test -s steem-sse-prg-dialog.png
           sleep 2
