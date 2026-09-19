@@ -63,27 +63,21 @@ jobs:
           fi
           printf 'EmuTOS boot window %s: PASS\n' "${{ matrix.profile }}"
 
-      - name: Execute raw probe from floppy image
+      - name: Execute canonical probe from GEMDOS drive
         run: |
-          rm -f artifacts/MINPASS.TXT artifacts/M2PROBE.ST
+          rm -f artifacts/MINPASS.TXT
           test -s artifacts/MINIMAL.PRG
-          dd if=/dev/zero of=artifacts/M2PROBE.ST bs=512 count=1440 status=none
-          mkfs.fat -F 12 -n M2PROBE artifacts/M2PROBE.ST
-          mmd -i artifacts/M2PROBE.ST ::/AUTO
-          mcopy -i artifacts/M2PROBE.ST artifacts/MINIMAL.PRG ::/AUTO/MINIMAL.PRG
-          mdir -i artifacts/M2PROBE.ST ::/AUTO
 
-          name="atari-m2-${{ matrix.profile }}"
           set +e
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 45s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img --disk-a /runtime/artifacts/M2PROBE.ST --harddrive /runtime/artifacts --gemdos-drive C --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log --log-level debug --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log --run-vbls 1500 >/runtime/artifacts/hatari-stdout-${{ matrix.profile }}.log 2>/runtime/artifacts/hatari-stderr-${{ matrix.profile }}.log; rc=$?; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
+            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 45s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --auto /runtime/artifacts/MINIMAL.PRG --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log --log-level debug --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log --run-vbls 1500 >/runtime/artifacts/hatari-stdout-${{ matrix.profile }}.log 2>/runtime/artifacts/hatari-stderr-${{ matrix.profile }}.log; rc=$?; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
           rc=$?
           set -e
 
           cat "artifacts/hatari-stderr-${{ matrix.profile }}.log" || true
           cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" || true
-          grep -Ei 'AUTO|MINIMAL|PRG|Pexec|Fcreate|Fwrite|GEMDOS|boot' "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 300 || true
+          grep -Ei 'MINIMAL|PRG|Pexec|Fcreate|Fwrite|Fclose|GEMDOS|boot' "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 300 || true
 
           if [ "$rc" -ne 0 ] && [ ! -s artifacts/MINPASS.TXT ]; then
             echo "ERROR: Hatari ended without guest marker (rc=$rc)" >&2
@@ -91,7 +85,7 @@ jobs:
           fi
           test -s artifacts/MINPASS.TXT
           grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
-          printf 'Floppy AUTO GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
+          printf 'Canonical GEMDOS execution probe %s: PASS\n' "${{ matrix.profile }}"
 
       - name: Verify Atari-side GEMDOS execution evidence
         run: |
