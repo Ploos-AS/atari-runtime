@@ -25,7 +25,7 @@ jobs:
       - name: Install runtime dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse0 xvfb gdb x11-utils imagemagick xfonts-base xfonts-75dpi xfonts-100dpi
+          sudo apt-get install -y libpulse0 xvfb gdb x11-utils xdotool imagemagick xfonts-base xfonts-75dpi xfonts-100dpi
           test -s steem-linux/libs/libcapsimage.so.5
           mkdir -p "$RUNNER_TEMP/steem-libs"
           cp steem-linux/libs/libcapsimage.so.5 "$RUNNER_TEMP/steem-libs/"
@@ -101,6 +101,10 @@ jobs:
             ./xsteem64
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
+          sleep 3
+          # Steem SSE documents F12 as the start/stop-emulation shortcut.
+          # Use X11 input so CI exercises the same public control as a user.
+          xdotool key F12
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
           test -s steem-sse-emutos-boot.png
