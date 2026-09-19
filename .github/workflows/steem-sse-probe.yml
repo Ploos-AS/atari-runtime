@@ -94,21 +94,21 @@ jobs:
               if line.startswith("["):
                   in_options = line.strip() == "[Options]"
               if in_options and line.startswith("NewROMFile="):
-                  line = f"NewROMFile={Path.cwd() / 'steem-linux/bin/roms/emutos.img'}"
+                  line = f"NewROMFile={Path.cwd() / 'steem-linux/bin/roms/emutos.tos'}"
                   seen_rom = True
               lines.append(line)
           if not seen_rom:
               raise SystemExit("NewROMFile key missing from Steem configuration")
           p.write_text("\n".join(lines) + "\n")
           PY
-          grep -F "NewROMFile=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" steem-linux/bin/steem.ini
+          grep -F "NewROMFile=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.tos" steem-linux/bin/steem.ini
           # Steem's active ROM is persisted separately under [Machine].
           # NewROMFile alone still triggers the first-run TOS chooser.
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
           s = p.read_text()
-          rom = str(Path.cwd() / "steem-linux/bin/roms/emutos.img")
+          rom = str(Path.cwd() / "steem-linux/bin/roms/emutos.tos")
           lines = []
           in_machine = False
           seen = False
@@ -123,9 +123,12 @@ jobs:
               raise SystemExit("ROM_File key missing from Steem configuration")
           p.write_text("\n".join(lines) + "\n")
           PY
-          grep -F "ROM_File=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" steem-linux/bin/steem.ini
+          grep -F "ROM_File=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.tos" steem-linux/bin/steem.ini
           # Steem's first-run ROM chooser also scans ROM_Add_Dir. Point it at
           # the directory containing only our canonical open EmuTOS image.
+          # Keep the traditional .img name, and also provide a .tos alias:
+          # Steem's ROM browser/filter may classify TOS images by extension.
+          cp steem-linux/bin/roms/emutos.img steem-linux/bin/roms/emutos.tos
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
