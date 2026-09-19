@@ -89,25 +89,28 @@ jobs:
           grep -F 'NewROMFile=roms/emutos.img' steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
 
-      - name: Probe startup from Steem working directory
+      - name: Probe EmuTOS boot and capture display evidence
         run: |
-          set +e
+          set -eux
+          Xvfb :99 -screen 0 1024x768x24 >/tmp/steem-xvfb.log 2>&1 &
+          xvfb_pid=$!
+          export DISPLAY=:99
+          sleep 1
           (
             cd steem-linux/bin
-            xvfb-run -a timeout --signal=TERM --kill-after=2s 12s ./xsteem64
-          ) >steem-sse-stdout.log 2>steem-sse-stderr.log
-          rc=$?
-          set -e
-          cat steem-sse-stdout.log || true
-          cat steem-sse-stderr.log || true
-          printf 'exit_code=%s\n' "$rc" | tee steem-sse-result.txt
-          case "$rc" in
-            0|124|137|143) ;;
-            139)
-              echo 'Steem SSE segfaulted; collecting debugger evidence.' >&2
-              ;;
-            *) exit "$rc" ;;
-          esac
+            ./xsteem64
+          ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
+          steem_pid=$!
+          sleep 10
+          import -display :99 -window root steem-sse-emutos-boot.png
+          test -s steem-sse-emutos-boot.png
+          test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
+          identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
+          kill "$steem_pid" 2>/dev/null || true
+          wait "$steem_pid" 2>/dev/null || true
+          kill "$xvfb_pid" 2>/dev/null || true
+          wait "$xvfb_pid" 2>/dev/null || true
+          printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
 
       - name: Collect GDB backtrace after startup crash
         if: always()
@@ -146,8 +149,9 @@ jobs:
             steem-sse-emutos-version.txt
             steem-sse-emutos-sha256.txt
             steem-sse-emutos-boot.png
+            steem-sse-emutos-boot.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-gdb.log
             steem-sse-result.txt
-          if-no-files-found: warn
+          if-no-files-found: error
