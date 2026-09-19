@@ -239,6 +239,21 @@ jobs:
             win="$(xdotool search --onlyvisible --name 'TOS Image' | head -n 1 || true)"
           fi
 
+          if [ -z "$win" ]; then
+            best_area=0
+            for wid in $(xdotool search --onlyvisible --name '.*'); do
+              [ "$wid" = "543" ] && continue
+              size="$(xdotool getwindowgeometry "$wid" 2>/dev/null | awk '/Geometry:/ {print $2}')"
+              w="${size%x*}"
+              h="${size#*x}"
+              case "$w:$h" in *[!0-9:]*|:) continue ;; esac
+              area=$((w * h))
+              if [ "$area" -gt "$best_area" ]; then
+                best_area="$area"
+                win="$wid"
+              fi
+            done
+          fi
           test -n "$win"
           xdotool windowraise "$win" || true
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
