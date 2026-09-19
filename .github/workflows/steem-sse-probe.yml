@@ -40,7 +40,7 @@ jobs:
       - name: Install runtime dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpulse0 xvfb gdb x11-utils xdotool imagemagick xfonts-base xfonts-75dpi xfonts-100dpi
+          sudo apt-get install -y strace libpulse0 xvfb gdb x11-utils xdotool imagemagick xfonts-base xfonts-75dpi xfonts-100dpi
           test -s steem-linux/libs/libcapsimage.so.5
           mkdir -p "$RUNNER_TEMP/steem-libs"
           cp steem-linux/libs/libcapsimage.so.5 "$RUNNER_TEMP/steem-libs/"
@@ -165,7 +165,7 @@ jobs:
           sleep 1
           (
             cd steem-linux/bin
-            ./xsteem64
+            strace -ff -o "$GITHUB_WORKSPACE/steem-sse-strace" ./xsteem64
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
           sleep 3
@@ -216,6 +216,16 @@ jobs:
             set -e
             printf 'steem_exit_status=%s\n' "$steem_rc" | tee steem-sse-exit-status.txt
             echo "Steem exited after welcome dialog" >&2
+            {
+              echo "=== stderr ==="
+              tail -200 steem-sse-stderr.log || true
+              echo "=== strace tail ==="
+              for trace in steem-sse-strace*; do
+                [ -f "$trace" ] || continue
+                echo "--- $trace ---"
+                tail -120 "$trace"
+              done
+            } | tee steem-sse-exit-diagnostics.txt
             exit "$steem_rc"
           fi
           printf 'steem_exit_status=running\n' | tee steem-sse-exit-status.txt
@@ -341,6 +351,8 @@ jobs:
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-exit-status.txt
+            steem-sse-exit-diagnostics.txt
+            steem-sse-strace*
             steem-sse-gdb.log
             steem-sse-result.txt
             steem-linux/bin/PRG/MINPASS.TXT
