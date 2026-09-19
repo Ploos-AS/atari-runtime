@@ -260,10 +260,18 @@ jobs:
           fi
           sleep 5
           # A remaining TOS Image dialog means Steem rejected the configured
-          # active ROM. Do not drive the brittle selector: fail with evidence.
+          # active ROM. Capture enough X11 structure to identify the exact
+          # first-run controls before attempting any further automation.
           tos_dialog="$(xdotool search --onlyvisible --name 'TOS Image' | head -n 1 || true)"
           if [ -n "$tos_dialog" ]; then
             xdotool getwindowgeometry "$tos_dialog" | tee steem-sse-tos-dialog.txt
+            xwininfo -tree -id "$tos_dialog" | tee steem-sse-tos-dialog-tree.txt
+            xprop -id "$tos_dialog" | tee steem-sse-tos-dialog-xprop.txt
+            for child in $(xwininfo -tree -id "$tos_dialog" | awk '/0x[0-9a-f]+/ {print $1}' | tail -n +2); do
+              echo "=== $child ==="
+              xwininfo -id "$child" 2>/dev/null || true
+              xprop -id "$child" 2>/dev/null || true
+            done | tee steem-sse-tos-dialog-children.txt
             import -display :99 -window root steem-sse-tos-dialog.png
             echo "Steem rejected configured EmuTOS ROM" >&2
             exit 86
