@@ -212,6 +212,25 @@ jobs:
             xdotool mouseup 1
           fi
           sleep 5
+          # Fresh Steem may ignore NewROMFile until its first-run TOS dialog
+          # has been acknowledged. Drive that dialog explicitly using the
+          # canonical EmuTOS image rather than mistaking it for a booted guest.
+          tos_dialog="$(xdotool search --onlyvisible --name 'TOS Image' | head -n 1 || true)"
+          if [ -n "$tos_dialog" ]; then
+            ok_button=""
+            for wid in $(xdotool search --onlyvisible --name '.*'); do
+              size="$(xdotool getwindowgeometry "$wid" 2>/dev/null | awk '/Geometry:/ {print $2}')"
+              if [ "$size" = "100x25" ]; then ok_button="$wid"; break; fi
+            done
+            test -n "$ok_button"
+            xdotool mousemove --window "$ok_button" 50 12 click 1
+            sleep 2
+            # The file selector is an X11 dialog; type the absolute canonical
+            # ROM path and accept it.
+            xdotool type --delay 20 "$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img"
+            xdotool key Return
+            sleep 5
+          fi
           if ! kill -0 "$steem_pid" 2>/dev/null; then
             set +e
             wait "$steem_pid"
