@@ -49,6 +49,32 @@ jobs:
             exit 1
           fi
 
+      - name: Configure EmuTOS boot probe
+        run: |
+          set -eux
+          test -s roms/emutos.img
+          cp roms/emutos.img steem-linux/bin/roms/emutos.img
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("steem-linux/bin/steem.ini")
+          s = p.read_text()
+          lines = []
+          in_options = False
+          seen_rom = False
+          for line in s.splitlines():
+              if line.startswith("["):
+                  in_options = line.strip() == "[Options]"
+              if in_options and line.startswith("NewROMFile="):
+                  line = "NewROMFile=roms/emutos.img"
+                  seen_rom = True
+              lines.append(line)
+          if not seen_rom:
+              raise SystemExit("NewROMFile key missing from Steem configuration")
+          p.write_text("\n".join(lines) + "\n")
+          PY
+          grep -F 'NewROMFile=roms/emutos.img' steem-linux/bin/steem.ini
+          sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
+
       - name: Probe startup from Steem working directory
         run: |
           set +e
@@ -103,6 +129,7 @@ jobs:
             steem-sse-ldd.txt
             x11-fonts.txt
             x11-font-candidates.txt
+            steem-sse-emutos-sha256.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-gdb.log
