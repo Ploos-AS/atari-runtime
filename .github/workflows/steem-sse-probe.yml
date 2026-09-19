@@ -190,16 +190,16 @@ jobs:
           if [ -n "$welcome" ]; then
             # The two 100x25 child windows are the modal buttons. Click the
             # right-most child rather than guessing coordinates in the parent.
-            button="$(for wid in $(xdotool search --onlyvisible --name '.*'); do
-              parent="$(xdotool getwindowfocus 2>/dev/null || true)"
-              geom="$(xdotool getwindowgeometry "$wid" 2>/dev/null || true)"
-              size="$(printf '%s\\n' "$geom" | awk '/Geometry:/ {print $2}')"
-              pos="$(printf '%s\\n' "$geom" | awk '/Position:/ {print $2}' | tr -d '()')"
-              if [ "$size" = "100x25" ] && [ -n "$pos" ]; then
-                x="${pos%,*}"
-                printf '%s %s\\n' "$x" "$wid"
+            # Child positions are relative to their parent, so simply use
+            # the last visible 100x25 child: Steem creates the two modal
+            # buttons in left-to-right order and Continue is the latter.
+            button=""
+            for wid in $(xdotool search --onlyvisible --name '.*'); do
+              size="$(xdotool getwindowgeometry "$wid" 2>/dev/null | awk '/Geometry:/ {print $2}')"
+              if [ "$size" = "100x25" ]; then
+                button="$wid"
               fi
-            done | sort -nr | head -n 1 | awk '{print $2}')"
+            done
             test -n "$button"
             xdotool click --window "$button" 1
           fi
