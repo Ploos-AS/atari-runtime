@@ -38,96 +38,31 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p artifacts
-          curl --fail --location             -H "Authorization: Bearer $GH_TOKEN"             -H "Accept: application/vnd.github+json"             -o /tmp/atari-dev-m2.zip             https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10577129455/zip
+          curl --fail --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -o /tmp/atari-dev-m2.zip \
+            https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10577129455/zip
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
-          sha256sum artifacts/HELLO.TOS
+          test -s artifacts/MINIMAL.PRG
+          sha256sum artifacts/HELLO.TOS artifacts/MINIMAL.PRG
+
       - name: Prove EmuTOS reaches video boot
         run: |
-          rm -f artifacts/boot-${{ matrix.profile }}.png
-          set +e
+          rm -f artifacts/xvfb-${{ matrix.profile }}.log artifacts/boot-hatari-${{ matrix.profile }}.log
           timeout --signal=TERM --kill-after=5s 20s docker run --name "atari-boot-${{ matrix.profile }}" \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
             sh -c 'Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & export DISPLAY=:99; sleep 1; hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 & h=$!; sleep 8; cp /tmp/xvfb.log /runtime/artifacts/xvfb-${{ matrix.profile }}.log; cp /tmp/hatari.log /runtime/artifacts/boot-hatari-${{ matrix.profile }}.log; kill "$h" 2>/dev/null || true; wait "$h" 2>/dev/null || true'
-          rc=$?
-          set -e
-          echo "boot probe rc=$rc"
-          echo "=== Xvfb log ==="
           cat artifacts/xvfb-${{ matrix.profile }}.log || true
-          echo "=== Hatari boot log ==="
           cat artifacts/boot-hatari-${{ matrix.profile }}.log || true
-          test "$rc" -eq 0
-          grep -qv '^
-      - name: Execute raw probe from floppy image
-        run: |
-          rm -f artifacts/MINPASS.TXT artifacts/M2PROBE.ST
-          test -s artifacts/MINIMAL.PRG
-
-          # Build a real FAT12 Atari-compatible floppy image.  This deliberately
-          # avoids Hatari's GEMDOS host-directory mapping as a launch dependency.
-          dd if=/dev/zero of=artifacts/M2PROBE.ST bs=512 count=1440 status=none
-          mkfs.fat -F 12 -n M2PROBE artifacts/M2PROBE.ST
-          mmd -i artifacts/M2PROBE.ST ::/AUTO
-          mcopy -i artifacts/M2PROBE.ST artifacts/MINIMAL.PRG ::/AUTO/MINIMAL.PRG
-          mdir -i artifacts/M2PROBE.ST ::/AUTO
-
-          name="atari-m2-${{ matrix.profile }}"
-          set +e
-          timeout --signal=TERM --kill-after=5s 60s docker run --name "$name" \
-            -v "$PWD/artifacts:/runtime/artifacts" \
-            atari-runtime:m2 \
-            xvfb-run -a hatari \
-              --machine "${{ matrix.profile }}" \
-              --memsize 1 \
-              --tos /runtime/roms/emutos.img \
-              --disk-a /runtime/artifacts/M2PROBE.ST \
-              --harddrive /runtime/artifacts \
-              --gemdos-drive C \
-              --trace os_base,gemdos \
-              --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log \
-              --log-level debug \
-              --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log \
-              --run-vbls 1500 \
-              >"artifacts/hatari-stdout-${{ matrix.profile }}.log" \
-              2>"artifacts/hatari-stderr-${{ matrix.profile }}.log"
-          rc=$?
-          set -e
-
-          echo "=== Hatari stderr ==="
-          cat "artifacts/hatari-stderr-${{ matrix.profile }}.log" || true
-          echo "=== Hatari stdout ==="
-          cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" || true
-          echo "Hatari rc=$rc"
-          echo "=== Hatari boot/debug evidence ==="
-          cat "artifacts/hatari-boot-debug-${{ matrix.profile }}.log" 2>/dev/null || true
-          echo "=== AUTO / PRG / GEMDOS trace evidence ==="
-          grep -Ei 'AUTO|MINIMAL|PRG|Pexec|Fcreate|Fwrite|GEMDOS|boot' "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 300 || true
-          echo "=== trace tail ==="
-          tail -n 160 "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null || true
-
-          # timeout(1) may terminate the emulator after the guest already produced
-          # authoritative evidence.  The marker, not Hatari shutdown, is the gate.
-          if [ "$rc" -ne 0 ] && [ ! -s artifacts/MINPASS.TXT ]; then
-            echo "ERROR: Hatari ended without guest marker (rc=$rc)" >&2
-            exit 1
-          fi
-          test -s artifacts/MINPASS.TXT
-          grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
-          printf 'Floppy AUTO GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
-      - name: Verify Atari-side GEMDOS execution evidence
-        run: |
-          test -s artifacts/MINPASS.TXT
-          grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
-          file artifacts/MINIMAL.PRG
- artifacts/boot-hatari-${{ matrix.profile }}.log || true
+          test -s artifacts/boot-hatari-${{ matrix.profile }}.log
           printf 'EmuTOS boot window %s: PASS\n' "${{ matrix.profile }}"
+
       - name: Execute raw probe from floppy image
         run: |
           rm -f artifacts/MINPASS.TXT artifacts/M2PROBE.ST
           test -s artifacts/MINIMAL.PRG
-
-          # Build a real FAT12 Atari-compatible floppy image.  This deliberately
-          # avoids Hatari's GEMDOS host-directory mapping as a launch dependency.
           dd if=/dev/zero of=artifacts/M2PROBE.ST bs=512 count=1440 status=none
           mkfs.fat -F 12 -n M2PROBE artifacts/M2PROBE.ST
           mmd -i artifacts/M2PROBE.ST ::/AUTO
@@ -137,15 +72,12 @@ jobs:
           name="atari-m2-${{ matrix.profile }}"
           set +e
           timeout --signal=TERM --kill-after=5s 60s docker run --name "$name" \
-            -v "$PWD/artifacts:/runtime/artifacts" \
-            atari-runtime:m2 \
+            -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
             xvfb-run -a hatari \
-              --machine "${{ matrix.profile }}" \
-              --memsize 1 \
+              --machine "${{ matrix.profile }}" --memsize 1 \
               --tos /runtime/roms/emutos.img \
               --disk-a /runtime/artifacts/M2PROBE.ST \
-              --harddrive /runtime/artifacts \
-              --gemdos-drive C \
+              --harddrive /runtime/artifacts --gemdos-drive C \
               --trace os_base,gemdos \
               --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log \
               --log-level debug \
@@ -156,20 +88,10 @@ jobs:
           rc=$?
           set -e
 
-          echo "=== Hatari stderr ==="
           cat "artifacts/hatari-stderr-${{ matrix.profile }}.log" || true
-          echo "=== Hatari stdout ==="
           cat "artifacts/hatari-stdout-${{ matrix.profile }}.log" || true
-          echo "Hatari rc=$rc"
-          echo "=== Hatari boot/debug evidence ==="
-          cat "artifacts/hatari-boot-debug-${{ matrix.profile }}.log" 2>/dev/null || true
-          echo "=== AUTO / PRG / GEMDOS trace evidence ==="
           grep -Ei 'AUTO|MINIMAL|PRG|Pexec|Fcreate|Fwrite|GEMDOS|boot' "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null | tail -n 300 || true
-          echo "=== trace tail ==="
-          tail -n 160 "artifacts/hatari-boot-trace-${{ matrix.profile }}.log" 2>/dev/null || true
 
-          # timeout(1) may terminate the emulator after the guest already produced
-          # authoritative evidence.  The marker, not Hatari shutdown, is the gate.
           if [ "$rc" -ne 0 ] && [ ! -s artifacts/MINPASS.TXT ]; then
             echo "ERROR: Hatari ended without guest marker (rc=$rc)" >&2
             exit 1
@@ -177,6 +99,7 @@ jobs:
           test -s artifacts/MINPASS.TXT
           grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
           printf 'Floppy AUTO GEMDOS marker probe %s: PASS\n' "${{ matrix.profile }}"
+
       - name: Verify Atari-side GEMDOS execution evidence
         run: |
           test -s artifacts/MINPASS.TXT
