@@ -19,9 +19,10 @@ Baseline target: Hatari + EmuTOS. Cross-emulator target: the same artifact also 
 - **M0 — Foundation — PASS**
 - **M1 — Hatari infrastructure — PASS**
 - **M2 — TOS runtime qualification — PASS**
-- **M3 — Automated emulator matrix — NEXT**
+- **M3.1 — Reusable consumer qualification — PASS**
+- **M3.2 — Steem SSE cross-emulator qualification — NEXT**
 
-M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS.
+M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. M3.1 reusable consumer qualification was independently self-tested on both profiles in reusable qualification self-test run #1. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS.
 
 ## M2 qualification
 
