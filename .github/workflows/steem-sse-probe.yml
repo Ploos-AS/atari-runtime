@@ -153,6 +153,14 @@ jobs:
           # retain the resulting UI as evidence before automating selection.
           xdotool mousemove --window "$win" 630 10 click 1
           sleep 3
+          # Record every visible X11 window after opening Disk Manager. Steem
+          # uses separate top-level windows, so this gives deterministic IDs
+          # and geometry instead of guessing coordinates in the main window.
+          xdotool search --onlyvisible --name '.*' | while read -r wid; do
+            printf 'WINDOW %s\n' "$wid"
+            xdotool getwindowname "$wid" || true
+            xdotool getwindowgeometry "$wid" || true
+          done | tee steem-sse-visible-windows.txt
           import -display :99 -window root steem-sse-prg-dialog.png
           test -s steem-sse-prg-dialog.png
           sleep 2
@@ -209,6 +217,7 @@ jobs:
             steem-sse-emutos-boot.txt
             steem-sse-prg-dialog.png
             steem-sse-window.txt
+            steem-sse-visible-windows.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-gdb.log
