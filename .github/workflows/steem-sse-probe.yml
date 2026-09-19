@@ -183,28 +183,17 @@ jobs:
           xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
-          # M3.2c: with host hard drives disabled EmuTOS boots cleanly.
-          # Steem's PRG support is exposed through the disk manager. Open the
-          # far-right toolbar control using window-relative coordinates and
-          # retain the resulting UI as evidence before automating selection.
-          xdotool mousemove --window "$win" 630 10 click 1
+          # M3.2c: exercise the guest desktop directly. Z: is the only
+          # assigned hard drive in this probe. Open it and launch the
+          # canonical MINIMAL.PRG from the EmuTOS desktop.
+          xdotool mousemove --window "$win" 120 170 click --repeat 2 --delay 120 1
           sleep 3
-          # Record every visible X11 window after opening Disk Manager. Steem
-          # uses separate top-level windows, so this gives deterministic IDs
-          # and geometry instead of guessing coordinates in the main window.
-          xdotool search --onlyvisible --name '.*' | while read -r wid; do
-            printf 'WINDOW %s\n' "$wid"
-            xdotool getwindowname "$wid" || true
-            xdotool getwindowgeometry "$wid" || true
-          done | tee steem-sse-visible-windows.txt
           import -display :99 -window root steem-sse-prg-dialog.png
           test -s steem-sse-prg-dialog.png
-          # The disk manager is a separate cluster of child windows around
-          # screen position 282,348. Click its large directory pane to give it
-          # focus, then type the canonical PRG path and press Return. This is
-          # diagnostic: the exact guest marker remains mandatory.
-          xdotool mousemove 500 460 click 1
-          xdotool type --delay 20 "$GITHUB_WORKSPACE/steem-linux/bin/PRG/MINIMAL.PRG" || true
+          xdotool key z || true
+          xdotool key Return || true
+          sleep 3
+          xdotool type --delay 80 "MINIMAL.PRG" || true
           xdotool key Return || true
           sleep 5
           test -s steem-sse-emutos-boot.png
