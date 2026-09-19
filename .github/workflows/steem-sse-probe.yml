@@ -111,8 +111,15 @@ jobs:
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
           s = p.read_text()
-          s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/guest-c'}")
-          s = s.replace("DisableHardDrives=1", "DisableHardDrives=1")
+          # Enable only the documented Z: PRG drive. Do not expose the
+          # legacy C:/D:/E: host paths that caused EmuTOS Address Error.
+          s = s.replace("Drive_0_Letter=C", "Drive_0_Letter=NOT ASSIGNED")
+          s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_0_Path=NOT ASSIGNED")
+          s = s.replace("Drive_1_Letter=D", "Drive_1_Letter=NOT ASSIGNED")
+          s = s.replace("Drive_1_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_1_Path=NOT ASSIGNED")
+          s = s.replace("Drive_2_Letter=E", "Drive_2_Letter=NOT ASSIGNED")
+          s = s.replace("Drive_2_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_2_Path=NOT ASSIGNED")
+          s = s.replace("DisableHardDrives=1", "DisableHardDrives=0")
           s = s.replace("PRG_support=0", "PRG_support=1")
           lines = s.splitlines()
           out = []
@@ -142,7 +149,7 @@ jobs:
           p.write_text("\\n".join(out) + "\\n")
           PY
           grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/guest-c" steem-linux/bin/steem.ini
-          grep -F 'DisableHardDrives=1' steem-linux/bin/steem.ini
+          grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
           grep -F 'Drive_3_Letter=Z' steem-linux/bin/steem.ini
           grep -F "Drive_3_Path=$GITHUB_WORKSPACE/steem-linux/bin/PRG" steem-linux/bin/steem.ini
