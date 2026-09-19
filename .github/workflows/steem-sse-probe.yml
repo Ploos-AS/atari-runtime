@@ -106,11 +106,12 @@ jobs:
           # The Linux port did not react to an unfocused F12 event in CI.
           win="$(xdotool search --onlyvisible --name 'Steem' | head -n 1)"
           test -n "$win"
-          xdotool windowactivate --sync "$win"
-          xdotool windowraise "$win"
+          # Bare Xvfb has no window manager, so _NET_ACTIVE_WINDOW is unavailable.
+          # A window-relative click does not require WM focus/activation.
+          xdotool windowraise "$win" || true
           sleep 1
-          # Run/play control is in the upper-right toolbar of the 640x480 Steem UI.
-          eval "$(xdotool getwindowgeometry --shell "$win")"
+          xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
+          # Run/play control is in the upper-right toolbar of the Steem UI.
           xdotool mousemove --window "$win" 610 28 click 1
           sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
@@ -161,6 +162,7 @@ jobs:
             steem-sse-emutos-sha256.txt
             steem-sse-emutos-boot.png
             steem-sse-emutos-boot.txt
+            steem-sse-window.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
             steem-sse-gdb.log
