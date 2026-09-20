@@ -82,7 +82,15 @@ jobs:
       - name: Configure EmuTOS boot probe
         run: |
           set -eux
+          # Provision both names before touching steem.ini. Steem SSE's
+          # first-run code and ROM browser use the configured .rom path, while
+          # the command-line probe retains the canonical downloaded .img name.
           cp roms/emutos.img steem-linux/bin/roms/emutos.img
+          cp roms/emutos.img steem-linux/bin/roms/emutos.rom
+          test -s steem-linux/bin/roms/emutos.img
+          test -s steem-linux/bin/roms/emutos.rom
+          cmp -s steem-linux/bin/roms/emutos.img steem-linux/bin/roms/emutos.rom
+          sha256sum steem-linux/bin/roms/emutos.img steem-linux/bin/roms/emutos.rom | tee steem-sse-provisioned-rom-sha256.txt
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
@@ -128,7 +136,6 @@ jobs:
           # the directory containing only our canonical open EmuTOS image.
           # Keep the traditional .img name, and also provide a .tos alias:
           # Steem's ROM browser/filter may classify TOS images by extension.
-          cp steem-linux/bin/roms/emutos.img steem-linux/bin/roms/emutos.rom
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
@@ -497,6 +504,7 @@ jobs:
             x11-font-candidates.txt
             steem-sse-emutos-version.txt
             steem-sse-emutos-sha256.txt
+            steem-sse-provisioned-rom-sha256.txt
             steem-sse-emutos-boot.png
             steem-sse-emutos-boot.txt
             steem-sse-prg-dialog.png
