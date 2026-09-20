@@ -270,7 +270,7 @@ jobs:
             # The dialog is a custom-drawn X11 window: its only actionable
             # child is a 100x25 button at +250+148. Record it explicitly and
             # probe that button instead of invoking the native file selector.
-            tos_button="$(xwininfo -tree -id "$tos_dialog" | awk '$3 == "100x25+250+148" {print $1; exit}')"
+            tos_button="$(xwininfo -tree -id "$tos_dialog" | awk '/100x25[+]250[+]148/ {print $1; exit}')"
             if [ -n "$tos_button" ]; then
               xdotool windowraise "$tos_dialog" || true
               xdotool mousemove --window "$tos_button" 50 12
