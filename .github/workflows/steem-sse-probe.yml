@@ -283,6 +283,7 @@ jobs:
           xdotool windowraise "$win" || true
           sleep 1
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
+steem-sse-run-click.txt
           # Screenshot evidence shows the Run/play control at the far left of
           # Steem's toolbar (window-relative ~10,10), not at the right edge.
           xdotool mousemove --window "$win" 10 10 click 1
@@ -416,11 +417,12 @@ jobs:
           test -n "$win"
           xdotool windowraise "$win" || true
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
-          # Steem's yellow triangle is the Run/Start control. The emulator
-          # opens with execution stopped, so start the Atari before treating
-          # the framebuffer as guest evidence.
-          xdotool mousemove --window "$win" 10 10 click 1
+          # Steem's Run control is on the emulator toolbar below the menu.
+          # Start execution explicitly, then record the post-click window so
+          # the probe can distinguish a running guest from a stopped frame.
+          xdotool mousemove --window "$win" 22 82 click 1
           sleep 10
+          xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the running guest desktop directly. Z: is the
           # only assigned hard drive in this probe. Open its desktop icon,
