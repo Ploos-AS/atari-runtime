@@ -37,6 +37,18 @@ jobs:
             cp "$probe" artifacts/MINIMAL.PRG
           fi
           test -s artifacts/MINIMAL.PRG
+          # Build a deterministic 720 KiB ST floppy with MINIMAL.PRG in AUTO.
+          # This avoids GEM desktop-coordinate assumptions entirely: EmuTOS runs
+          # AUTO programs during boot, while Steem's documented .st command-line
+          # option inserts the image and starts emulation.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mtools
+          rm -f steem-linux/bin/minimal-auto.st
+          truncate -s 720K steem-linux/bin/minimal-auto.st
+          mformat -i steem-linux/bin/minimal-auto.st -f 720 ::
+          mmd -i steem-linux/bin/minimal-auto.st ::/AUTO
+          mcopy -i steem-linux/bin/minimal-auto.st artifacts/MINIMAL.PRG ::/AUTO/MINIMAL.PRG
+          mdir -i steem-linux/bin/minimal-auto.st ::/AUTO
 
       - name: Install runtime dependencies
         run: |
@@ -449,51 +461,11 @@ jobs:
           # GEM desktop systematically instead of assuming keyboard selection:
           # double-click a small grid of likely drive-icon positions and stop
           # as soon as the framebuffer changes.
-          import -display :99 -window root steem-sse-before-drive-root.png
-          opened=0
-          # Atari framebuffer begins at window-relative y~42. Sweep the full
-          # desktop width/height at icon-sized intervals; run #95 proved the
-          # earlier small upper-left grid contained no interactive drive icon.
-          for y in 70 110 150 190 230 270 310 350 390; do
-            for x in 40 80 120 160 200 240 280 320 360 400 440 480 520 560 600; do
-              xdotool mousemove --window "$win" "$x" "$y" click --repeat 2 --delay 100 1
-              sleep 0.25
-              import -display :99 -window root /tmp/steem-drive-probe.png
-              if ! cmp -s steem-sse-before-drive-root.png /tmp/steem-drive-probe.png; then
-                printf 'drive_open_click=%s,%s\n' "$x" "$y" | tee steem-sse-drive-click.txt
-                opened=1
-                break 2
-              fi
-            done
-          done
-          if [ "$opened" -ne 1 ]; then
-            echo "No interactive GEM drive icon found across framebuffer" >&2
-            exit 89
-          fi
-          sleep 3
-          import -display :99 -window root steem-sse-prg-dialog.png
-          # Compare the guest framebuffer before/after the keyboard drive-open sequence. A changed image
-          # is required before treating the drive as open.
-          convert steem-sse-emutos-boot.png -crop 640x380+201+242 +repage steem-sse-before-drive.png
-          convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage steem-sse-drive-open.png
-          if cmp -s steem-sse-before-drive.png steem-sse-drive-open.png; then
-            echo "Keyboard drive-open sequence produced no visible GEM framebuffer change" >&2
-            exit 88
-          fi
-          # Preserve the post-drive-open framebuffer separately so subsequent
-          # GEM coordinates can be qualified from evidence rather than guessed.
-          convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage steem-sse-drive-open.png
-          xdotool search --onlyvisible --name '.*' 2>/dev/null | while read -r wid; do
-            printf 'GUEST_WINDOW %s name=%s\\n' "$wid" \
-              "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
-          done | tee steem-sse-guest-windows.txt
-          # GEM does not provide shell-style type-to-select in a desktop
-          # directory window. After opening C:, double-click the first program
-          # icon in the directory content area instead of typing a filename.
-          # The probe directory contains only the canonical MINIMAL.PRG.
-          xdotool mousemove --window "$win" 90 155 click --repeat 2 --delay 120 1
+          # No GEM desktop automation is required for execution qualification.
+          # MINIMAL.PRG is in the floppy AUTO directory and must execute during
+          # EmuTOS boot. Keep the post-boot framebuffer as evidence.
           sleep 5
-          import -display :99 -window root steem-sse-after-prg.png
+          import -display :99 -window root steem-sse-after-auto.png
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
