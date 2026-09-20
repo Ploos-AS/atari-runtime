@@ -419,7 +419,11 @@ jobs:
           # Steem's Run control is on the emulator toolbar below the menu.
           # Start execution explicitly, then record the post-click window so
           # the probe can distinguish a running guest from a stopped frame.
-          xdotool mousemove --window "$win" 22 82 click 1
+          # Screenshot coordinates are root-relative: Steem begins at
+          # (200,200) and the Run triangle is around (210,210), i.e. roughly
+          # (10,10) in the Steem client. --window coordinates proved offset by
+          # the X11 decorations in bare Xvfb, so click the observed root point.
+          xdotool mousemove 210 210 click 1
           sleep 10
           xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
