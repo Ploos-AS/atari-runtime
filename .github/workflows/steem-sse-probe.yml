@@ -480,6 +480,13 @@ jobs:
           kill "$xvfb_pid" 2>/dev/null || true
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
+          # Command-line .st loading is authoritative for this qualification.
+          # Keep the disk image in the artifact and inspect Steem's trace for
+          # an actual open/read of it before accepting the run.
+          if ! grep -Fq "minimal-auto.st" steem-sse-strace*; then
+            echo "Steem did not open the canonical AUTO floppy image" >&2
+            exit 90
+          fi
           marker='Ploos-AS atari-runtime minimal GEMDOS execution PASS'
           # AUTO execution happens from the floppy filesystem, so retrieve the
           # marker from either the filesystem root or AUTO/ depending on the
