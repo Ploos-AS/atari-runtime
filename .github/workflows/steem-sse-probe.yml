@@ -250,7 +250,7 @@ jobs:
           sleep 1
           (
             cd steem-linux/bin
-            strace -ff -o "$GITHUB_WORKSPACE/steem-sse-strace" ./xsteem64 "$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" -NONEWIN
+            strace -ff -o "$GITHUB_WORKSPACE/steem-sse-strace" ./xsteem64 "$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img" -NONEW
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
           sleep 3
