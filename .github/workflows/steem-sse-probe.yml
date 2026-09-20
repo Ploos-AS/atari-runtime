@@ -457,8 +457,14 @@ jobs:
           # The play triangle is the left-most toolbar control. Artifact
           # screenshots place it at window-relative ~12,33; click that exact
           # control instead of the framebuffer or relying on F12 delivery.
+          # The AUTO disk is now mounted before startup. Perform a cold reset
+          # after Run so EmuTOS boots from drive A and scans A:\\AUTO.
           xdotool mousemove --window "$win" 12 33 click 1
-          sleep 10
+          sleep 2
+          # Reset is the toolbar control immediately to the right of fast
+          # forward. A left click requests the documented cold reset.
+          xdotool mousemove --window "$win" 82 33 click 1
+          sleep 12
           xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the running guest desktop directly. First prove
