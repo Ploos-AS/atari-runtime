@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/steem-sse-probe.yml'
       - 'docs/M3_2_STEEM_SSE.md'
+      - 'ROADMAP.md'
 
 jobs:
   linux-startup:
