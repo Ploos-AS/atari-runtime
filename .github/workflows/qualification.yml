@@ -42,7 +42,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -o /tmp/atari-dev-m2.zip \
-            https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10583492647/zip
+            https://api.github.com/repos/Ploos-AS/atari-dev/actions/artifacts/10600359653/zip
           unzip -q /tmp/atari-dev-m2.zip -d artifacts
           test -s artifacts/HELLO.TOS
           test -s artifacts/MINIMAL.PRG
