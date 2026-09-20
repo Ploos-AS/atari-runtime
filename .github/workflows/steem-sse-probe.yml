@@ -156,10 +156,15 @@ jobs:
           if len(data) != 256 * 1024:
               raise SystemExit(f"unexpected EmuTOS ROM size: {len(data)}")
           reset = int.from_bytes(data[4:8], "big") & 0xffffff
+          # Steem SSE get_TOS_address() does not inspect the reset vector.
+          # It reads bytes 8..11 and accepts only an exact $E00000/$FC0000
+          # ROM base encoded there.
+          steem_header = int.from_bytes(data[8:12], "big") & 0xffffff
           print(f"emutos_size={len(data)}")
           print(f"emutos_reset_vector=0x{reset:06x}")
-          if reset not in (0xe00000, 0xfc0000) and not (0xe00000 <= reset < 0xe40000):
-              raise SystemExit(f"Steem-incompatible EmuTOS reset vector: 0x{reset:06x}")
+          print(f"emutos_steem_header=0x{steem_header:06x}")
+          if steem_header not in (0xe00000, 0xfc0000):
+              raise SystemExit(f"Steem-incompatible EmuTOS header: 0x{steem_header:06x}")
           PY
           mkdir -p steem-linux/bin/guest-c steem-linux/bin/PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
