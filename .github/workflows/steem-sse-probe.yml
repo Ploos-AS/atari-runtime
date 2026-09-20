@@ -149,6 +149,28 @@ jobs:
           p.write_text("\n".join(lines) + "\n")
           PY
           grep -F "ROM_Add_Dir=$GITHUB_WORKSPACE/steem-linux/bin/roms" steem-linux/bin/steem.ini
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("steem-linux/bin/steem.ini")
+          lines = p.read_text().splitlines()
+          out = []
+          section = ""
+          seen = False
+          for line in lines:
+              if line.startswith("[") and line.endswith("]"):
+                  section = line
+              if section == "[Update]" and line.startswith("LatestVersion="):
+                  line = "LatestVersion=4.2.0"
+                  seen = True
+              out.append(line)
+          if not seen:
+              pos = next((i + 1 for i, line in enumerate(out) if line == "[Update]"), None)
+              if pos is None:
+                  raise SystemExit("[Update] section missing")
+              out.insert(pos, "LatestVersion=4.2.0")
+          p.write_text("\n".join(out) + "\n")
+          PY
+          grep -F "LatestVersion=4.2.0" steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
           python3 - <<'PY'
           from pathlib import Path
