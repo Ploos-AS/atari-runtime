@@ -445,10 +445,11 @@ jobs:
             echo "Steem window exists but Atari framebuffer is still blank; refusing false guest interaction" >&2
             exit 87
           fi
-          # Z: is the only assigned hard drive in this probe. Once the guest
-          # framebuffer is proven live, open its desktop icon and launch the
-          # canonical MINIMAL.PRG.
-          xdotool mousemove --window "$win" 120 170 click --repeat 2 --delay 120 1
+          # Z: is the only assigned hard drive in this probe. The Atari
+          # framebuffer begins below Steem's ~42px toolbar. Artifact evidence
+          # places the Z: desktop icon near guest (120,170), therefore use
+          # window-relative y=212 rather than clicking 42px too high.
+          xdotool mousemove --window "$win" 120 212 click --repeat 2 --delay 120 1
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
           xdotool search --onlyvisible --name '.*' 2>/dev/null | while read -r wid; do
