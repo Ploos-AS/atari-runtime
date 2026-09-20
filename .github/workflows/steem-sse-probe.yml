@@ -460,10 +460,13 @@ jobs:
           # as soon as the framebuffer changes.
           import -display :99 -window root steem-sse-before-drive-root.png
           opened=0
-          for y in 90 120 150 180 210; do
-            for x in 70 110 150 190 230; do
-              xdotool mousemove --window "$win" "$x" "$y" click --repeat 2 --delay 120 1
-              sleep 1
+          # Atari framebuffer begins at window-relative y~42. Sweep the full
+          # desktop width/height at icon-sized intervals; run #95 proved the
+          # earlier small upper-left grid contained no interactive drive icon.
+          for y in 70 110 150 190 230 270 310 350 390; do
+            for x in 40 80 120 160 200 240 280 320 360 400 440 480 520 560 600; do
+              xdotool mousemove --window "$win" "$x" "$y" click --repeat 2 --delay 100 1
+              sleep 0.25
               import -display :99 -window root /tmp/steem-drive-probe.png
               if ! cmp -s steem-sse-before-drive-root.png /tmp/steem-drive-probe.png; then
                 printf 'drive_open_click=%s,%s\n' "$x" "$y" | tee steem-sse-drive-click.txt
@@ -472,7 +475,10 @@ jobs:
               fi
             done
           done
-          test "$opened" -eq 1
+          if [ "$opened" -ne 1 ]; then
+            echo "No interactive GEM drive icon found across framebuffer" >&2
+            exit 89
+          fi
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
           # Compare the guest framebuffer before/after the keyboard drive-open sequence. A changed image
