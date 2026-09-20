@@ -263,9 +263,9 @@ jobs:
           (
             cd steem-linux/bin
             strace -ff -o "$GITHUB_WORKSPACE/steem-sse-strace" ./xsteem64 \
-              "$GITHUB_WORKSPACE/steem-linux/bin/minimal-auto.st" \
               "INI=$GITHUB_WORKSPACE/steem-linux/bin/steem.ini" \
-              "/$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.img"
+              "DISK_A=$GITHUB_WORKSPACE/steem-linux/bin/minimal-auto.st" \
+              "RUN"
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
           # Explicit INI loading changes startup timing. Poll rather than
@@ -481,7 +481,7 @@ jobs:
           kill "$xvfb_pid" 2>/dev/null || true
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
-          # Command-line .st loading is authoritative for this qualification.
+          # Explicit DISK_A loading is authoritative for this qualification.
           # Keep the disk image in the artifact and inspect Steem's trace for
           # an actual open/read of it before accepting the run.
           if ! grep -Fq "minimal-auto.st" steem-sse-strace*; then
