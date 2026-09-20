@@ -47,8 +47,11 @@ jobs:
           truncate -s 720K steem-linux/bin/minimal-auto.st
           mformat -i steem-linux/bin/minimal-auto.st -f 720 ::
           mmd -i steem-linux/bin/minimal-auto.st ::/AUTO
-          mcopy -i steem-linux/bin/minimal-auto.st artifacts/MINIMAL.PRG ::/AUTO/MINIMAL.PRG
+          # TOS AUTO boot convention requires *.PRG directly in \AUTO.
+          # Use a classic 8.3 name to avoid any emulator/TOS filename edge.
+          mcopy -i steem-linux/bin/minimal-auto.st artifacts/MINIMAL.PRG ::/AUTO/PROBE.PRG
           mdir -i steem-linux/bin/minimal-auto.st ::/AUTO
+          mdir -i steem-linux/bin/minimal-auto.st ::/AUTO/PROBE.PRG
 
       - name: Install runtime dependencies
         run: |
