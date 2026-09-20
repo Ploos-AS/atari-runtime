@@ -483,10 +483,19 @@ jobs:
           # control instead of the framebuffer or relying on F12 delivery.
           # The AUTO disk is now mounted before startup. Perform a cold reset
           # after Run so EmuTOS boots from drive A and scans A:\\AUTO.
-          # Earlier framebuffer evidence established window-relative 22,10 as
-          # the Run target: that click changed the guest from blank to rendered.
-          # Use that proven target; 10,10 did not produce AUTO execution.
-          xdotool mousemove --window "$win" 22 10 click 1
+          # Capture the exact toolbar state around the Run interaction. The
+          # play triangle is at window-relative 10,10 in the current 642x423
+          # Linux window; retain before/after evidence instead of inferring
+          # execution from framebuffer colour count alone.
+          import -display :99 -window "$win" steem-sse-before-run.png
+          xdotool mousemove --window "$win" 10 10
+          xdotool mousedown 1
+          sleep 0.2
+          xdotool mouseup 1
+          sleep 2
+          import -display :99 -window "$win" steem-sse-after-run.png
+          compare -metric AE steem-sse-before-run.png steem-sse-after-run.png null: 2>steem-sse-run-pixel-diff.txt || true
+          xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null | tee steem-sse-after-run-windows.txt || true
           # Do not inject a guessed reset-toolbar coordinate here. Steem has
           # already loaded drive A from steem.ini before the first Run, so the
           # initial Run is the cold boot used for AUTO qualification.
@@ -609,6 +618,10 @@ jobs:
             steem-sse-drive-open.png
             steem-sse-window.txt
             steem-sse-run-click.txt
+            steem-sse-before-run.png
+            steem-sse-after-run.png
+            steem-sse-run-pixel-diff.txt
+            steem-sse-after-run-windows.txt
             steem-sse-run-button.txt
             steem-sse-guest-framebuffer.txt
             steem-sse-visible-windows.txt
