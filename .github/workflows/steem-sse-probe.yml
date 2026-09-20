@@ -454,9 +454,25 @@ jobs:
           # an unverified Alt+Z drive shortcut. Select "Open" on the desktop
           # after selecting the Z: icon via keyboard navigation.
           xdotool windowfocus --sync "$win"
-          xdotool key --window "$win" Home
-          xdotool key --window "$win" z
-          xdotool key --window "$win" Return
+          # Drive Z is configured as the sole hard drive. Probe the visible
+          # GEM desktop systematically instead of assuming keyboard selection:
+          # double-click a small grid of likely drive-icon positions and stop
+          # as soon as the framebuffer changes.
+          import -display :99 -window root steem-sse-before-drive-root.png
+          opened=0
+          for y in 90 120 150 180 210; do
+            for x in 70 110 150 190 230; do
+              xdotool mousemove --window "$win" "$x" "$y" click --repeat 2 --delay 120 1
+              sleep 1
+              import -display :99 -window root /tmp/steem-drive-probe.png
+              if ! cmp -s steem-sse-before-drive-root.png /tmp/steem-drive-probe.png; then
+                printf 'drive_open_click=%s,%s\n' "$x" "$y" | tee steem-sse-drive-click.txt
+                opened=1
+                break 2
+              fi
+            done
+          done
+          test "$opened" -eq 1
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
           # Compare the guest framebuffer before/after the keyboard drive-open sequence. A changed image
@@ -543,6 +559,8 @@ jobs:
             steem-sse-emutos-boot.txt
             steem-sse-prg-dialog.png
             steem-sse-before-drive.png
+            steem-sse-before-drive-root.png
+            steem-sse-drive-click.txt
             steem-sse-drive-open.png
             steem-sse-window.txt
             steem-sse-run-click.txt
