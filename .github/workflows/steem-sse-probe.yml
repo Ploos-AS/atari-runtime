@@ -205,10 +205,10 @@ jobs:
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
           s = p.read_text()
-          # Enable only the documented Z: PRG drive. Do not expose the
+          # Enable the canonical PRG directory as C:, the primary GEMDOS hard drive.
           # legacy C:/D:/E: host paths that caused EmuTOS Address Error.
-          s = s.replace("Drive_0_Letter=C", "Drive_0_Letter=NOT ASSIGNED")
-          s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_0_Path=NOT ASSIGNED")
+          s = s.replace("Drive_0_Letter=C", "Drive_0_Letter=C")
+          s = s.replace("Drive_0_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
           s = s.replace("Drive_1_Letter=D", "Drive_1_Letter=NOT ASSIGNED")
           s = s.replace("Drive_1_Path=/home/gureetsidhu/Downloads/Steem.SSE.4.2.0.Linux64", "Drive_1_Path=NOT ASSIGNED")
           s = s.replace("Drive_2_Letter=E", "Drive_2_Letter=NOT ASSIGNED")
@@ -224,31 +224,31 @@ jobs:
               if line.startswith("[") and line.endswith("]"):
                   if in_harddrives:
                       if not seen_letter:
-                          out.append("Drive_3_Letter=Z")
+                          out.append("Drive_0_Letter=C")
                       if not seen_path:
-                          out.append(f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
+                          out.append(f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
                   in_harddrives = line == "[HardDrives]"
               if in_harddrives and line.startswith("Drive_3_Letter="):
-                  line = "Drive_3_Letter=Z"
+                  line = "Drive_0_Letter=C"
                   seen_letter = True
-              elif in_harddrives and line.startswith("Drive_3_Path="):
-                  line = f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}"
+              elif in_harddrives and line.startswith("Drive_0_Path="):
+                  line = f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}"
                   seen_path = True
               out.append(line)
           if in_harddrives:
               if not seen_letter:
-                  out.append("Drive_3_Letter=Z")
+                  out.append("Drive_0_Letter=C")
               if not seen_path:
-                  out.append(f"Drive_3_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
+                  out.append(f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
           p.write_text("\\n".join(out) + "\\n")
           PY
-          grep -F 'Drive_0_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
+          grep -F 'Drive_0_Letter=C' steem-linux/bin/steem.ini
           grep -F 'Drive_1_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
           grep -F 'Drive_2_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
           grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
-          grep -F 'Drive_3_Letter=Z' steem-linux/bin/steem.ini
-          grep -F "Drive_3_Path=$GITHUB_WORKSPACE/steem-linux/bin/PRG" steem-linux/bin/steem.ini
+          grep -F 'Drive_0_Letter=C' steem-linux/bin/steem.ini
+          grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/PRG" steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
         run: |
@@ -446,15 +446,15 @@ jobs:
             exit 87
           fi
           # The cropped evidence from run #90 proves the earlier guessed
-          # desktop coordinate did not open Z:. Use GEM's keyboard desktop
+          # desktop coordinate did not open C:. Use GEM's keyboard desktop
           # shortcut instead: Alt+Z opens drive Z without depending on icon
           # placement or Steem window decorations.
           # Xvfb has no window manager. Focus the X11 window directly, then
           # use GEM's standard Alt+F "File" menu path rather than relying on
           # an unverified Alt+Z drive shortcut. Select "Open" on the desktop
-          # after selecting the Z: icon via keyboard navigation.
+          # after selecting the C: icon via keyboard navigation.
           xdotool windowfocus --sync "$win"
-          # Drive Z is configured as the sole hard drive. Probe the visible
+          # Drive C is configured as the sole hard drive. Probe the visible
           # GEM desktop systematically instead of assuming keyboard selection:
           # double-click a small grid of likely drive-icon positions and stop
           # as soon as the framebuffer changes.
@@ -497,7 +497,7 @@ jobs:
               "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
           done | tee steem-sse-guest-windows.txt
           # GEM does not provide shell-style type-to-select in a desktop
-          # directory window. After opening Z:, double-click the first program
+          # directory window. After opening C:, double-click the first program
           # icon in the directory content area instead of typing a filename.
           # The probe directory contains only the canonical MINIMAL.PRG.
           xdotool mousemove --window "$win" 90 155 click --repeat 2 --delay 120 1
@@ -518,7 +518,7 @@ jobs:
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
           marker='Ploos-AS atari-runtime minimal GEMDOS execution PASS'
-          # The documented Steem PRG launcher maps the PRG directory as Z:.
+          # The documented Steem PRG launcher maps the PRG directory as C:.
           # A relative guest output therefore lands beside AUTORUN.PRG.
           test -s steem-linux/bin/PRG/MINPASS.TXT
           grep -Fx "$marker" steem-linux/bin/PRG/MINPASS.TXT
