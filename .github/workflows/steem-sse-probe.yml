@@ -254,11 +254,28 @@ jobs:
             strace -ff -o "$GITHUB_WORKSPACE/steem-sse-strace" ./xsteem64 "INI=$GITHUB_WORKSPACE/steem-linux/bin/steem.ini"
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
-          sleep 3
+          # Explicit INI loading changes startup timing. Poll rather than
+          # assuming the main X11 window exists after exactly three seconds.
+          win=""
+          for attempt in $(seq 1 15); do
+            win="$(xdotool search --onlyvisible --name 'Steem' 2>/dev/null | head -n 1 || true)"
+            [ -n "$win" ] && break
+            if ! kill -0 "$steem_pid" 2>/dev/null; then
+              echo "Steem exited before creating its main window" >&2
+              break
+            fi
+            sleep 1
+          done
+          if [ -z "$win" ]; then
+            xdotool search --onlyvisible --name '.*' 2>/dev/null | while read -r wid; do
+              printf 'WINDOW %s class=%s name=%s\\n' "$wid" \
+                "$(xdotool getwindowclassname "$wid" 2>/dev/null || true)" \
+                "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
+            done | tee steem-sse-visible-windows.txt
+          fi
+          test -n "$win"
           # Focus Steem's main window and activate its visible Run control.
           # The Linux port did not react to an unfocused F12 event in CI.
-          win="$(xdotool search --onlyvisible --name 'Steem' | head -n 1)"
-          test -n "$win"
           # Bare Xvfb has no window manager, so _NET_ACTIVE_WINDOW is unavailable.
           # A window-relative click does not require WM focus/activation.
           xdotool windowraise "$win" || true
