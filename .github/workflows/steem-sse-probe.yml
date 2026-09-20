@@ -431,13 +431,24 @@ jobs:
           sleep 10
           xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
-          # M3.2c: exercise the running guest desktop directly. Z: is the
-          # only assigned hard drive in this probe. Open its desktop icon,
-          # then launch the canonical MINIMAL.PRG.
+          # M3.2c: exercise the running guest desktop directly. First prove
+          # that Steem is rendering an Atari framebuffer, not merely its X11
+          # toolbar/window chrome. The framebuffer area must contain visible
+          # non-black guest pixels before we attempt GEM interaction.
+          import -display :99 -window root steem-sse-prg-dialog.png
+          test -s steem-sse-prg-dialog.png
+          guest_colors="$(convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage -format '%k' info:)"
+          printf 'guest_framebuffer_colors=%s\n' "$guest_colors" | tee steem-sse-guest-framebuffer.txt
+          if [ "$guest_colors" -le 1 ]; then
+            echo "Steem window exists but Atari framebuffer is still blank; refusing false guest interaction" >&2
+            exit 87
+          fi
+          # Z: is the only assigned hard drive in this probe. Once the guest
+          # framebuffer is proven live, open its desktop icon and launch the
+          # canonical MINIMAL.PRG.
           xdotool mousemove --window "$win" 120 170 click --repeat 2 --delay 120 1
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
-          test -s steem-sse-prg-dialog.png
           xdotool search --onlyvisible --name '.*' 2>/dev/null | while read -r wid; do
             printf 'GUEST_WINDOW %s name=%s\\n' "$wid" \
               "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
@@ -511,6 +522,7 @@ jobs:
             steem-sse-prg-dialog.png
             steem-sse-window.txt
             steem-sse-run-click.txt
+            steem-sse-guest-framebuffer.txt
             steem-sse-visible-windows.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
