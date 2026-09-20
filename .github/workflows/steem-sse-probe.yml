@@ -445,11 +445,12 @@ jobs:
             echo "Steem window exists but Atari framebuffer is still blank; refusing false guest interaction" >&2
             exit 87
           fi
-          # Z: is the only assigned hard drive in this probe. The Atari
-          # framebuffer begins below Steem's ~42px toolbar. Artifact evidence
-          # places the Z: desktop icon near guest (120,170), therefore use
-          # window-relative y=212 rather than clicking 42px too high.
-          xdotool mousemove --window "$win" 120 212 click --repeat 2 --delay 120 1
+          # The cropped evidence from run #90 proves the earlier guessed
+          # desktop coordinate did not open Z:. Use GEM's keyboard desktop
+          # shortcut instead: Alt+Z opens drive Z without depending on icon
+          # placement or Steem window decorations.
+          xdotool windowactivate --sync "$win"
+          xdotool key --window "$win" alt+z
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
           # Preserve the post-drive-open framebuffer separately so subsequent
