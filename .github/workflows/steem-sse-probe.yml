@@ -67,13 +67,13 @@ jobs:
       - name: Provision canonical EmuTOS ROM
         env:
           EMUTOS_VERSION: '1.4'
-          EMUTOS_URL: https://downloads.sourceforge.net/project/emutos/emutos/1.4/emutos-512k-1.4.zip
+          EMUTOS_URL: https://downloads.sourceforge.net/project/emutos/emutos/1.4/emutos-256k-1.4.zip
         run: |
           set -eux
           mkdir -p roms /tmp/emutos
           curl --fail --location --show-error --silent -o /tmp/emutos.zip "$EMUTOS_URL"
           unzip -q /tmp/emutos.zip -d /tmp/emutos
-          rom="$(find /tmp/emutos -type f -name 'etos*.img' | head -n 1)"
+          rom="$(find /tmp/emutos -type f -name 'etos256*.img' | head -n 1)"
           test -n "$rom"
           cp "$rom" roms/emutos.img
           test -s roms/emutos.img
