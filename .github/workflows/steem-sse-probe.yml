@@ -150,6 +150,17 @@ jobs:
           PY
           grep -F "ROM_Add_Dir=$GITHUB_WORKSPACE/steem-linux/bin/roms" steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          data = Path("roms/emutos.img").read_bytes()
+          if len(data) != 256 * 1024:
+              raise SystemExit(f"unexpected EmuTOS ROM size: {len(data)}")
+          reset = int.from_bytes(data[4:8], "big") & 0xffffff
+          print(f"emutos_size={len(data)}")
+          print(f"emutos_reset_vector=0x{reset:06x}")
+          if reset not in (0xe00000, 0xfc0000) and not (0xe00000 <= reset < 0xe40000):
+              raise SystemExit(f"Steem-incompatible EmuTOS reset vector: 0x{reset:06x}")
+          PY
           mkdir -p steem-linux/bin/guest-c steem-linux/bin/PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/guest-c/MINIMAL.PRG
           cp artifacts/MINIMAL.PRG steem-linux/bin/PRG/MINIMAL.PRG
