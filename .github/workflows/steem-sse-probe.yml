@@ -438,7 +438,6 @@ jobs:
           # toolbar/window chrome. The framebuffer area must contain visible
           # non-black guest pixels before we attempt GEM interaction.
           import -display :99 -window root steem-sse-prg-dialog.png
-steem-sse-drive-open.png
           test -s steem-sse-prg-dialog.png
           guest_colors="$(convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage -format '%k' info:)"
           printf 'guest_framebuffer_colors=%s\n' "$guest_colors" | tee steem-sse-guest-framebuffer.txt
