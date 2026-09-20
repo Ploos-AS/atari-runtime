@@ -94,21 +94,21 @@ jobs:
               if line.startswith("["):
                   in_options = line.strip() == "[Options]"
               if in_options and line.startswith("NewROMFile="):
-                  line = f"NewROMFile={Path.cwd() / 'steem-linux/bin/roms/emutos.tos'}"
+                  line = f"NewROMFile={Path.cwd() / 'steem-linux/bin/roms/emutos.rom'}"
                   seen_rom = True
               lines.append(line)
           if not seen_rom:
               raise SystemExit("NewROMFile key missing from Steem configuration")
           p.write_text("\n".join(lines) + "\n")
           PY
-          grep -F "NewROMFile=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.tos" steem-linux/bin/steem.ini
+          grep -F "NewROMFile=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.rom" steem-linux/bin/steem.ini
           # Steem's active ROM is persisted separately under [Machine].
           # NewROMFile alone still triggers the first-run TOS chooser.
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
           s = p.read_text()
-          rom = str(Path.cwd() / "steem-linux/bin/roms/emutos.tos")
+          rom = str(Path.cwd() / "steem-linux/bin/roms/emutos.rom")
           lines = []
           in_machine = False
           seen = False
@@ -123,12 +123,12 @@ jobs:
               raise SystemExit("ROM_File key missing from Steem configuration")
           p.write_text("\n".join(lines) + "\n")
           PY
-          grep -F "ROM_File=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.tos" steem-linux/bin/steem.ini
+          grep -F "ROM_File=$GITHUB_WORKSPACE/steem-linux/bin/roms/emutos.rom" steem-linux/bin/steem.ini
           # Steem's first-run ROM chooser also scans ROM_Add_Dir. Point it at
           # the directory containing only our canonical open EmuTOS image.
           # Keep the traditional .img name, and also provide a .tos alias:
           # Steem's ROM browser/filter may classify TOS images by extension.
-          cp steem-linux/bin/roms/emutos.img steem-linux/bin/roms/emutos.tos
+          cp steem-linux/bin/roms/emutos.img steem-linux/bin/roms/emutos.rom
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
@@ -160,17 +160,17 @@ jobs:
               if line.startswith("[") and line.endswith("]"):
                   section = line
               if section == "[Update]" and line.startswith("LatestVersion="):
-                  line = "LatestVersion=4.2.0"
+                  line = "LatestVersion=999.0.0"
                   seen = True
               out.append(line)
           if not seen:
               pos = next((i + 1 for i, line in enumerate(out) if line == "[Update]"), None)
               if pos is None:
                   raise SystemExit("[Update] section missing")
-              out.insert(pos, "LatestVersion=4.2.0")
+              out.insert(pos, "LatestVersion=999.0.0")
           p.write_text("\n".join(out) + "\n")
           PY
-          grep -F "LatestVersion=4.2.0" steem-linux/bin/steem.ini
+          grep -F "LatestVersion=999.0.0" steem-linux/bin/steem.ini
           sha256sum roms/emutos.img | tee steem-sse-emutos-sha256.txt
           python3 - <<'PY'
           from pathlib import Path
