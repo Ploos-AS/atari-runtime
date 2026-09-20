@@ -460,11 +460,10 @@ jobs:
           # The AUTO disk is now mounted before startup. Perform a cold reset
           # after Run so EmuTOS boots from drive A and scans A:\\AUTO.
           xdotool mousemove --window "$win" 12 33 click 1
-          sleep 2
-          # Reset is the toolbar control immediately to the right of fast
-          # forward. A left click requests the documented cold reset.
-          xdotool mousemove --window "$win" 82 33 click 1
-          sleep 12
+          # Do not inject a guessed reset-toolbar coordinate here. Steem has
+          # already loaded drive A from steem.ini before the first Run, so the
+          # initial Run is the cold boot used for AUTO qualification.
+          sleep 15
           xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the running guest desktop directly. First prove
