@@ -453,6 +453,14 @@ jobs:
           xdotool key --window "$win" alt+z
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
+          # Compare the guest framebuffer before/after Alt+Z. A changed image
+          # is required before treating the drive as open.
+          convert steem-sse-emutos-boot.png -crop 640x380+201+242 +repage steem-sse-before-drive.png
+          convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage steem-sse-drive-open.png
+          if cmp -s steem-sse-before-drive.png steem-sse-drive-open.png; then
+            echo "Alt+Z produced no visible GEM framebuffer change" >&2
+            exit 88
+          fi
           # Preserve the post-drive-open framebuffer separately so subsequent
           # GEM coordinates can be qualified from evidence rather than guessed.
           convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage steem-sse-drive-open.png
@@ -528,6 +536,7 @@ jobs:
             steem-sse-emutos-boot.png
             steem-sse-emutos-boot.txt
             steem-sse-prg-dialog.png
+            steem-sse-before-drive.png
             steem-sse-drive-open.png
             steem-sse-window.txt
             steem-sse-run-click.txt
