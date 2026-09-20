@@ -169,6 +169,32 @@ jobs:
           p.write_text("\n".join(lines) + "\n")
           PY
           grep -F "ROM_Add_Dir=$GITHUB_WORKSPACE/steem-linux/bin/roms" steem-linux/bin/steem.ini
+          # Configure drive A through Steem's native INI keys. The Linux
+          # command-line parser treats DISK_A=... as a filename, not an option.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("steem-linux/bin/steem.ini")
+          disk = Path.cwd() / "steem-linux/bin/minimal-auto.st"
+          lines = p.read_text().splitlines()
+          out = []
+          section = ""
+          seen_path = seen_name = False
+          for line in lines:
+              if line.startswith("[") and line.endswith("]"):
+                  section = line
+              if section == "[Disks]" and line.startswith("Disk_A_Path="):
+                  line = f"Disk_A_Path={disk.parent}"
+                  seen_path = True
+              elif section == "[Disks]" and line.startswith("Disk_A_Name="):
+                  line = f"Disk_A_Name={disk.name}"
+                  seen_name = True
+              out.append(line)
+          if not (seen_path and seen_name):
+              raise SystemExit("Steem [Disks] drive A keys missing")
+          p.write_text("\n".join(out) + "\n")
+          PY
+          grep -F "Disk_A_Path=$GITHUB_WORKSPACE/steem-linux/bin" steem-linux/bin/steem.ini
+          grep -F "Disk_A_Name=minimal-auto.st" steem-linux/bin/steem.ini
           python3 - <<'PY'
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
@@ -263,9 +289,7 @@ jobs:
           (
             cd steem-linux/bin
             strace -ff -o "$GITHUB_WORKSPACE/steem-sse-strace" ./xsteem64 \
-              "INI=$GITHUB_WORKSPACE/steem-linux/bin/steem.ini" \
-              "DISK_A=$GITHUB_WORKSPACE/steem-linux/bin/minimal-auto.st" \
-              "RUN"
+              "INI=$GITHUB_WORKSPACE/steem-linux/bin/steem.ini"
           ) >steem-sse-stdout.log 2>steem-sse-stderr.log &
           steem_pid=$!
           # Explicit INI loading changes startup timing. Poll rather than
@@ -481,7 +505,7 @@ jobs:
           kill "$xvfb_pid" 2>/dev/null || true
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
-          # Explicit DISK_A loading is authoritative for this qualification.
+          # Native [Disks] drive-A loading is authoritative for this qualification.
           # Keep the disk image in the artifact and inspect Steem's trace for
           # an actual open/read of it before accepting the run.
           if ! grep -Fq "minimal-auto.st" steem-sse-strace*; then
