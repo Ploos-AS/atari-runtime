@@ -291,7 +291,7 @@ jobs:
           xdotool windowraise "$win" || true
           sleep 1
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
-          # Artifact evidence confirms the Run/play triangle occupies the
+          # Re-trigger M3.2 after refining the Run target. Artifact evidence confirms the Run/play triangle occupies the
           # top-left toolbar at window-relative ~12,33. The previous 10,10 coordinate was above the actual play triangle; 22,82
           # landed in the black Atari framebuffer, so it could
           # never start emulation.
