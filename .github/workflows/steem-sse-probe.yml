@@ -516,8 +516,14 @@ jobs:
           # AUTO execution happens from the floppy filesystem, so retrieve the
           # marker from either the filesystem root or AUTO/ depending on the
           # program's current-directory semantics.
-          rm -f steem-linux/bin/PRG/MINPASS.TXT
-          mcopy -i steem-linux/bin/minimal-auto.st ::/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT || true
+          # runtime-probe.c writes a relative MINPASS.TXT. Preserve a marker
+          # produced through the configured GEMDOS C: mapping before falling
+          # back to reading the writable AUTO floppy.
+          if [ -s steem-linux/bin/PRG/MINPASS.TXT ]; then
+            echo "marker_source=gemdos-c" | tee -a steem-sse-result.txt
+          else
+            mcopy -i steem-linux/bin/minimal-auto.st ::/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT || true
+          fi
           if [ ! -s steem-linux/bin/PRG/MINPASS.TXT ]; then
             mcopy -i steem-linux/bin/minimal-auto.st ::/AUTO/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT || true
           fi
