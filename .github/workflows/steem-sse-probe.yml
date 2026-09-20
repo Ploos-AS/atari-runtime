@@ -183,7 +183,7 @@ jobs:
               if line.startswith("[") and line.endswith("]"):
                   section = line
               if section == "[Disks]" and line.startswith("Disk_A_Path="):
-                  line = f"Disk_A_Path={disk.parent}"
+                  line = f"Disk_A_Path={disk}"
                   seen_path = True
               elif section == "[Disks]" and line.startswith("Disk_A_Name="):
                   line = f"Disk_A_Name={disk.name}"
@@ -193,7 +193,7 @@ jobs:
               raise SystemExit("Steem [Disks] drive A keys missing")
           p.write_text("\n".join(out) + "\n")
           PY
-          grep -F "Disk_A_Path=$GITHUB_WORKSPACE/steem-linux/bin" steem-linux/bin/steem.ini
+          grep -F "Disk_A_Path=$GITHUB_WORKSPACE/steem-linux/bin/minimal-auto.st" steem-linux/bin/steem.ini
           grep -F "Disk_A_Name=minimal-auto.st" steem-linux/bin/steem.ini
           python3 - <<'PY'
           from pathlib import Path
