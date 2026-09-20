@@ -481,8 +481,14 @@ jobs:
           wait "$xvfb_pid" 2>/dev/null || true
           printf 'boot_screenshot=PASS\n' | tee steem-sse-result.txt
           marker='Ploos-AS atari-runtime minimal GEMDOS execution PASS'
-          # The documented Steem PRG launcher maps the PRG directory as C:.
-          # A relative guest output therefore lands beside AUTORUN.PRG.
+          # AUTO execution happens from the floppy filesystem, so retrieve the
+          # marker from either the filesystem root or AUTO/ depending on the
+          # program's current-directory semantics.
+          rm -f steem-linux/bin/PRG/MINPASS.TXT
+          mcopy -i steem-linux/bin/minimal-auto.st ::/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT || true
+          if [ ! -s steem-linux/bin/PRG/MINPASS.TXT ]; then
+            mcopy -i steem-linux/bin/minimal-auto.st ::/AUTO/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT || true
+          fi
           test -s steem-linux/bin/PRG/MINPASS.TXT
           grep -Fx "$marker" steem-linux/bin/PRG/MINPASS.TXT
           printf 'guest_marker=PASS\n' | tee -a steem-sse-result.txt
