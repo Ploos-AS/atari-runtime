@@ -28,7 +28,7 @@ jobs:
         run: |
           set -eux
           mkdir -p artifacts
-          gh api repos/Ploos-AS/atari-dev/actions/artifacts/10583492647/zip > /tmp/atari-dev.zip
+          gh api repos/Ploos-AS/atari-dev/actions/artifacts/10600359653/zip > /tmp/atari-dev.zip
           unzip -q /tmp/atari-dev.zip -d artifacts
           probe="$(find artifacts -type f -name MINIMAL.PRG | head -n 1)"
           test -n "$probe"
