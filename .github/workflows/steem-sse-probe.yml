@@ -283,7 +283,6 @@ jobs:
           xdotool windowraise "$win" || true
           sleep 1
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
-steem-sse-run-click.txt
           # Screenshot evidence shows the Run/play control at the far left of
           # Steem's toolbar (window-relative ~10,10), not at the right edge.
           xdotool mousemove --window "$win" 10 10 click 1
@@ -502,6 +501,7 @@ steem-sse-run-click.txt
             steem-sse-emutos-boot.txt
             steem-sse-prg-dialog.png
             steem-sse-window.txt
+            steem-sse-run-click.txt
             steem-sse-visible-windows.txt
             steem-sse-stdout.log
             steem-sse-stderr.log
