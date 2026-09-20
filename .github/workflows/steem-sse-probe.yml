@@ -185,6 +185,7 @@ jobs:
           print(f"emutos_size={len(data)}")
           print(f"emutos_reset_vector=0x{reset:06x}")
           print(f"emutos_steem_header=0x{steem_header:06x}")
+          print("emutos_first16=" + data[:16].hex())
           if steem_header not in (0xe00000, 0xfc0000):
               raise SystemExit(f"Steem-incompatible EmuTOS header: 0x{steem_header:06x}")
           PY
