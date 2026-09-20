@@ -419,18 +419,23 @@ jobs:
           sleep 7
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the guest desktop directly. Z: is the only
-          # assigned hard drive in this probe. Open it and launch the
-          # canonical MINIMAL.PRG from the EmuTOS desktop.
+          # assigned hard drive in this probe. Open its desktop icon, then
+          # launch MINIMAL.PRG by typing the filename into the directory
+          # window. Keep screenshot evidence before and after each action.
           xdotool mousemove --window "$win" 120 170 click --repeat 2 --delay 120 1
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
           test -s steem-sse-prg-dialog.png
-          xdotool key z || true
-          xdotool key Return || true
-          sleep 3
+          xdotool search --onlyvisible --name '.*' 2>/dev/null | while read -r wid; do
+            printf 'GUEST_WINDOW %s name=%s\\n' "$wid" \
+              "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
+          done | tee steem-sse-guest-windows.txt
+          # GEM desktop windows accept the first matching filename typed
+          # directly; Return then opens/runs the selected object.
           xdotool type --delay 80 "MINIMAL.PRG" || true
           xdotool key Return || true
           sleep 5
+          import -display :99 -window root steem-sse-after-prg.png
           test -s steem-sse-emutos-boot.png
           test "$(stat -c %s steem-sse-emutos-boot.png)" -gt 1000
           identify steem-sse-emutos-boot.png | tee steem-sse-emutos-boot.txt
