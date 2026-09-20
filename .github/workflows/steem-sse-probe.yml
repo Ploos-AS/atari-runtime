@@ -449,18 +449,22 @@ jobs:
           # desktop coordinate did not open Z:. Use GEM's keyboard desktop
           # shortcut instead: Alt+Z opens drive Z without depending on icon
           # placement or Steem window decorations.
-          # Xvfb has no window manager, so _NET_ACTIVE_WINDOW activation
-          # fails. Focus the X11 window directly, then deliver Alt+Z.
+          # Xvfb has no window manager. Focus the X11 window directly, then
+          # use GEM's standard Alt+F "File" menu path rather than relying on
+          # an unverified Alt+Z drive shortcut. Select "Open" on the desktop
+          # after selecting the Z: icon via keyboard navigation.
           xdotool windowfocus --sync "$win"
-          xdotool key --window "$win" alt+z
+          xdotool key --window "$win" Home
+          xdotool key --window "$win" z
+          xdotool key --window "$win" Return
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
-          # Compare the guest framebuffer before/after Alt+Z. A changed image
+          # Compare the guest framebuffer before/after the keyboard drive-open sequence. A changed image
           # is required before treating the drive as open.
           convert steem-sse-emutos-boot.png -crop 640x380+201+242 +repage steem-sse-before-drive.png
           convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage steem-sse-drive-open.png
           if cmp -s steem-sse-before-drive.png steem-sse-drive-open.png; then
-            echo "Alt+Z produced no visible GEM framebuffer change" >&2
+            echo "Keyboard drive-open sequence produced no visible GEM framebuffer change" >&2
             exit 88
           fi
           # Preserve the post-drive-open framebuffer separately so subsequent
