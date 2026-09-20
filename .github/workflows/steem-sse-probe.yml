@@ -456,10 +456,11 @@ jobs:
             printf 'GUEST_WINDOW %s name=%s\\n' "$wid" \
               "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
           done | tee steem-sse-guest-windows.txt
-          # GEM desktop windows accept the first matching filename typed
-          # directly; Return then opens/runs the selected object.
-          xdotool type --delay 80 "MINIMAL.PRG" || true
-          xdotool key Return || true
+          # GEM does not provide shell-style type-to-select in a desktop
+          # directory window. After opening Z:, double-click the first program
+          # icon in the directory content area instead of typing a filename.
+          # The probe directory contains only the canonical MINIMAL.PRG.
+          xdotool mousemove --window "$win" 90 155 click --repeat 2 --delay 120 1
           sleep 5
           import -display :99 -window root steem-sse-after-prg.png
           test -s steem-sse-emutos-boot.png
