@@ -438,6 +438,7 @@ jobs:
           # toolbar/window chrome. The framebuffer area must contain visible
           # non-black guest pixels before we attempt GEM interaction.
           import -display :99 -window root steem-sse-prg-dialog.png
+steem-sse-drive-open.png
           test -s steem-sse-prg-dialog.png
           guest_colors="$(convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage -format '%k' info:)"
           printf 'guest_framebuffer_colors=%s\n' "$guest_colors" | tee steem-sse-guest-framebuffer.txt
@@ -452,6 +453,9 @@ jobs:
           xdotool mousemove --window "$win" 120 212 click --repeat 2 --delay 120 1
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
+          # Preserve the post-drive-open framebuffer separately so subsequent
+          # GEM coordinates can be qualified from evidence rather than guessed.
+          convert steem-sse-prg-dialog.png -crop 640x380+201+242 +repage steem-sse-drive-open.png
           xdotool search --onlyvisible --name '.*' 2>/dev/null | while read -r wid; do
             printf 'GUEST_WINDOW %s name=%s\\n' "$wid" \
               "$(xdotool getwindowname "$wid" 2>/dev/null || true)"
