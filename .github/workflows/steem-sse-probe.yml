@@ -285,7 +285,7 @@ jobs:
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
           # Screenshot evidence shows the Run/play control at the far left of
           # Steem's toolbar (window-relative ~10,10), not at the right edge.
-          xdotool mousemove --window "$win" 10 10 click 1
+          xdotool mousemove --window "$win" 22 82 click 1
           sleep 2
           # Fresh Steem profiles show a 400x150 "Welcome to Steem SSE"
           # modal. Its Continue button is the 100x25 child at the lower right
@@ -419,7 +419,7 @@ jobs:
           # The play triangle is the left-most toolbar control. In this
           # X11 build the client origin starts at that toolbar, so click the
           # visible Run control directly instead of relying on F12 delivery.
-          xdotool mousemove --window "$win" 10 10 click 1
+          xdotool mousemove --window "$win" 22 82 click 1
           sleep 10
           xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
