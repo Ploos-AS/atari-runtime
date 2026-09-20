@@ -261,7 +261,7 @@ jobs:
                   # Drive_N entry inherited from the stock Steem profile.
                   out.append("Drive_0_Letter=C")
                   out.append(f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
-                  out.append("BootDrive=0")
+                  out.append("BootDrive=2")
                   in_hd = False
                   out.append(line)
                   continue
@@ -271,7 +271,7 @@ jobs:
           if in_hd:
               out.append("Drive_0_Letter=C")
               out.append(f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
-              out.append("BootDrive=0")
+              out.append("BootDrive=2")
           p.write_text("\n".join(out) + "\n")
           PY
           grep -F 'Drive_0_Letter=C' steem-linux/bin/steem.ini
@@ -281,6 +281,7 @@ jobs:
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
           grep -F 'Drive_0_Letter=C' steem-linux/bin/steem.ini
           grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/PRG" steem-linux/bin/steem.ini
+          grep -F 'BootDrive=2' steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
         run: |
