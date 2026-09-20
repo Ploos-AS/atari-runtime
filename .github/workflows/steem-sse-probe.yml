@@ -266,7 +266,7 @@ jobs:
           from pathlib import Path
           p = Path("steem-linux/bin/steem.ini")
           s = p.read_text()
-          s = s.replace("DisableHardDrives=1", "DisableHardDrives=0")
+          s = s.replace("DisableHardDrives=0", "DisableHardDrives=1")
           s = s.replace("PRG_support=0", "PRG_support=1")
           lines = s.splitlines()
           out = []
@@ -281,7 +281,7 @@ jobs:
                   # Drive_N entry inherited from the stock Steem profile.
                   out.append("Drive_0_Letter=C")
                   out.append(f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
-                  out.append("BootDrive=2")
+                  out.append("BootDrive=0")
                   in_hd = False
                   out.append(line)
                   continue
@@ -291,17 +291,17 @@ jobs:
           if in_hd:
               out.append("Drive_0_Letter=C")
               out.append(f"Drive_0_Path={Path.cwd() / 'steem-linux/bin/PRG'}")
-              out.append("BootDrive=2")
+              out.append("BootDrive=0")
           p.write_text("\n".join(out) + "\n")
           PY
           grep -F 'Drive_0_Letter=C' steem-linux/bin/steem.ini
           grep -F 'Drive_1_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
           grep -F 'Drive_2_Letter=NOT ASSIGNED' steem-linux/bin/steem.ini
-          grep -F 'DisableHardDrives=0' steem-linux/bin/steem.ini
+          grep -F 'DisableHardDrives=1' steem-linux/bin/steem.ini
           grep -F 'PRG_support=1' steem-linux/bin/steem.ini
           grep -F 'Drive_0_Letter=C' steem-linux/bin/steem.ini
           grep -F "Drive_0_Path=$GITHUB_WORKSPACE/steem-linux/bin/PRG" steem-linux/bin/steem.ini
-          grep -F 'BootDrive=2' steem-linux/bin/steem.ini
+          grep -F 'BootDrive=0' steem-linux/bin/steem.ini
 
       - name: Probe EmuTOS boot and capture display evidence
         run: |
