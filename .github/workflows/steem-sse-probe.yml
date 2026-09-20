@@ -463,7 +463,11 @@ jobs:
           # control instead of the framebuffer or relying on F12 delivery.
           # The AUTO disk is now mounted before startup. Perform a cold reset
           # after Run so EmuTOS boots from drive A and scans A:\\AUTO.
-          xdotool mousemove --window "$win" 12 33 click 1
+          # Artifact evidence from run #110 shows the play triangle centered
+          # at window-relative x=10,y=10 (the client window begins at the
+          # toolbar). Click the visible Run control, not the older root-offset
+          # coordinate 12,33 which lands in the framebuffer.
+          xdotool mousemove --window "$win" 10 10 click 1
           # Do not inject a guessed reset-toolbar coordinate here. Steem has
           # already loaded drive A from steem.ini before the first Run, so the
           # initial Run is the cold boot used for AUTO qualification.
