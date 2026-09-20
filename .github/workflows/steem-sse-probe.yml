@@ -416,12 +416,15 @@ jobs:
           test -n "$win"
           xdotool windowraise "$win" || true
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
-          sleep 7
+          # Steem's yellow triangle is the Run/Start control. The emulator
+          # opens with execution stopped, so start the Atari before treating
+          # the framebuffer as guest evidence.
+          xdotool mousemove --window "$win" 10 10 click 1
+          sleep 10
           import -display :99 -window root steem-sse-emutos-boot.png
-          # M3.2c: exercise the guest desktop directly. Z: is the only
-          # assigned hard drive in this probe. Open its desktop icon, then
-          # launch MINIMAL.PRG by typing the filename into the directory
-          # window. Keep screenshot evidence before and after each action.
+          # M3.2c: exercise the running guest desktop directly. Z: is the
+          # only assigned hard drive in this probe. Open its desktop icon,
+          # then launch the canonical MINIMAL.PRG.
           xdotool mousemove --window "$win" 120 170 click --repeat 2 --delay 120 1
           sleep 3
           import -display :99 -window root steem-sse-prg-dialog.png
