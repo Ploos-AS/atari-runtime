@@ -53,6 +53,10 @@ jobs:
           p = Path("steem-linux/bin/minimal-auto.st")
           b = bytearray(p.read_bytes())
           b[0:2] = bytes.fromhex("601c")
+          # Compute the checksum with the checksum word cleared; otherwise the
+          # existing bytes 510..511 are counted and the replacement cannot
+          # reliably produce the TOS 0x1234 sum.
+          b[510:512] = b"\x00\x00"
           checksum = sum(int.from_bytes(b[i:i+2], "big") for i in range(0, 512, 2)) & 0xffff
           target = 0x1234
           fix = (target - checksum) & 0xffff
