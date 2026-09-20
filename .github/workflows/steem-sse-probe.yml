@@ -416,15 +416,12 @@ jobs:
           test -n "$win"
           xdotool windowraise "$win" || true
           xdotool getwindowgeometry "$win" | tee steem-sse-window.txt
-          # Bare Xvfb has no window manager and xdotool reports focus=1, so
-          # directed key events are unreliable here. Focus the Steem client
-          # with a real pointer click, then send the documented F12 Run key
-          # through the focused X input path.
-          xdotool mousemove --window "$win" 320 210 click 1
-          sleep 1
-          xdotool key F12
+          # The play triangle is the left-most toolbar control. In this
+          # X11 build the client origin starts at that toolbar, so click the
+          # visible Run control directly instead of relying on F12 delivery.
+          xdotool mousemove --window "$win" 10 10 click 1
           sleep 10
-          xdotool getwindowfocus 2>/dev/null | tee steem-sse-run-click.txt || true
+          xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the running guest desktop directly. Z: is the
           # only assigned hard drive in this probe. Open its desktop icon,
