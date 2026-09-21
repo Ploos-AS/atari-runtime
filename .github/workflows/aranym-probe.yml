@@ -117,6 +117,7 @@ jobs:
           EmuTOS = $HOME/.aranym/emutos-aranym.img
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
+          BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO BOOT_DRIVE=C
           [HOSTFS]
           C = $GITHUB_WORKSPACE/aranym-freemint/C
           [BOOT]
@@ -126,6 +127,7 @@ jobs:
           grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
+          grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
