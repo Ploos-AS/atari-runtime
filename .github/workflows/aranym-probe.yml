@@ -81,6 +81,24 @@ jobs:
             \( -iname '*aranym*' -o -iname 'mint*.prg' -o -iname 'mint*.xfs' -o -iname '*kernel*' \) \
             -printf '%P\n' | sort | tee freemint-boot-candidates.txt
           test -s freemint-boot-candidates.txt
+      - name: Stage FreeMiNT ARAnyM kernel tree
+        run: |
+          set -eux
+          mkdir -p aranym-freemint/C/AUTO aranym-freemint/C/MINT/1-18-0
+          cp /tmp/freemint/freemint/auto/mintara.prg aranym-freemint/C/AUTO/MINTARA.PRG
+          cp /tmp/freemint/freemint/driver/xfs/aranym.xfs aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
+          test -s aranym-freemint/C/AUTO/MINTARA.PRG
+          test -s aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
+          sha256sum \
+            aranym-freemint/C/AUTO/MINTARA.PRG \
+            aranym-freemint/C/MINT/1-18-0/ARANYM.XFS \
+            | tee freemint-aranym-files.sha256
+          {
+            echo "freemint_version=1.18.0"
+            echo "kernel=AUTO/MINTARA.PRG"
+            echo "xfs=MINT/1-18-0/ARANYM.XFS"
+            echo "status=STAGED"
+          } | tee freemint-aranym-stage.txt
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
@@ -127,6 +145,8 @@ jobs:
             freemint-release.json
             freemint-contents.txt
             freemint-boot-candidates.txt
+            freemint-aranym-files.sha256
+            freemint-aranym-stage.txt
             aranym-startup.log
             aranym-startup-result.txt
             aranym-xvfb.log
