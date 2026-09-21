@@ -1,0 +1,47 @@
+name: aranym integration probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/aranym-probe.yml"
+      - "ROADMAP.md"
+      - "README.md"
+  pull_request:
+    paths:
+      - ".github/workflows/aranym-probe.yml"
+  workflow_dispatch:
+
+jobs:
+  aranym-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARAnyM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y aranym
+      - name: Record ARAnyM baseline
+        run: |
+          set -eux
+          command -v aranym
+          dpkg-query -W -f='aranym_version=${Version}\n' aranym | tee aranym-version.txt
+          (aranym --help || true) > aranym-help.txt 2>&1
+          test -s aranym-version.txt
+      - name: Record M4.1 host capabilities
+        run: |
+          {
+            echo "milestone=M4.1"
+            echo "emulator=ARAnyM"
+            echo "guest_target=FreeMiNT"
+            echo "machine_class=TT/Falcon-oriented"
+            echo "status=BASELINE_PASS"
+          } | tee aranym-baseline.txt
+      - name: Upload ARAnyM baseline evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aranym-m4-1-baseline
+          path: |
+            aranym-version.txt
+            aranym-help.txt
+            aranym-baseline.txt
+          if-no-files-found: error
