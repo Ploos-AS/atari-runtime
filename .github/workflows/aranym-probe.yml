@@ -112,6 +112,9 @@ jobs:
           cat > aranym-freemint.cfg <<EOF
           [GLOBAL]
           FastRAM = 64
+          EmuTOS = $HOME/.aranym/emutos-aranym.img
+          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG
+          BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
           [HOSTFS]
           A = $GITHUB_WORKSPACE/aranym-freemint/C
           [BOOT]
@@ -120,6 +123,7 @@ jobs:
           test -s aranym-freemint.cfg
           grep -F "$GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
+          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
