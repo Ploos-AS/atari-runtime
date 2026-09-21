@@ -39,6 +39,28 @@ jobs:
           cp "$rom" "$HOME/.aranym/emutos-aranym.img"
           test -s "$HOME/.aranym/emutos-aranym.img"
           sha256sum "$HOME/.aranym/emutos-aranym.img" | tee aranym-emutos.sha256
+      - name: Discover current FreeMiNT release
+        run: |
+          set -eux
+          curl --fail --location --retry 3 \
+            https://api.github.com/repos/freemint/freemint/releases/latest \
+            -o freemint-release.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open("freemint-release.json"))
+          print("freemint_release_tag="+d.get("tag_name",""))
+          for a in d.get("assets",[]):
+              print(a.get("name","")+"\t"+a.get("browser_download_url",""))
+          PY
+          python3 - <<'PY' > freemint-release.txt
+          import json
+          d=json.load(open("freemint-release.json"))
+          print("tag="+d.get("tag_name",""))
+          print("published_at="+d.get("published_at",""))
+          for a in d.get("assets",[]):
+              print("asset="+a.get("name","")+"\t"+a.get("browser_download_url",""))
+          PY
+          grep -q '^tag=.' freemint-release.txt
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
@@ -81,6 +103,8 @@ jobs:
             aranym-version.txt
             aranym-help.txt
             aranym-emutos.sha256
+            freemint-release.txt
+            freemint-release.json
             aranym-startup.log
             aranym-startup-result.txt
             aranym-xvfb.log
