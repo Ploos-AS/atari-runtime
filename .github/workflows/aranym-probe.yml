@@ -127,26 +127,25 @@ jobs:
           [GLOBAL]
           FastRAM = 64
           EmuTOS = $HOME/.aranym/emutos-aranym.img
-          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG
+          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
-          BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO BOOT_DRIVE=C
+          BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1
           [IDE0]
-          Present = Yes
+          Present = No
           IsCDROM = No
           ByteSwap = No
           ReadOnly = No
-          Path = $GITHUB_WORKSPACE/aranym-freemint-c.img
+          Path =
           [HOSTFS]
-          D = $GITHUB_WORKSPACE/aranym-freemint/C
+          C = $GITHUB_WORKSPACE/aranym-freemint/C
           [BOOT]
           BootDrive = C
           EOF
           test -s aranym-freemint.cfg
-          grep -F "Path = $GITHUB_WORKSPACE/aranym-freemint-c.img" aranym-freemint.cfg
-          grep -F "ByteSwap = No" aranym-freemint.cfg
+          grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
-          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG" aranym-freemint.cfg
-          grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
+          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
+          grep -F "BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1" aranym-freemint.cfg
           grep -F "FastRAM = 64" aranym-freemint.cfg
           printf '\n=== ARAnyM startup log ===\n'
           # printed after the emulator run below
