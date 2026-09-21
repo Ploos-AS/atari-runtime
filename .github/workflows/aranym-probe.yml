@@ -91,10 +91,12 @@ jobs:
           cp /tmp/freemint/freemint/driver/xfs/hostfs.xfs aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/1-18-0/MINT.CNF
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/MINT.CNF
+          cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT.CNF
           test -s aranym-freemint/C/AUTO/MINTARA.PRG
           test -s aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           test -s aranym-freemint/C/MINT/MINT.CNF
+          test -s aranym-freemint/C/MINT.CNF
           test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
             aranym-freemint/C/AUTO/MINTARA.PRG \
@@ -116,12 +118,12 @@ jobs:
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
           [HOSTFS]
-          A = $GITHUB_WORKSPACE/aranym-freemint/C
+          C = $GITHUB_WORKSPACE/aranym-freemint/C
           [BOOT]
           BootDrive = C
           EOF
           test -s aranym-freemint.cfg
-          grep -F "$GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
+          grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
       - name: Probe headless ARAnyM + EmuTOS startup
