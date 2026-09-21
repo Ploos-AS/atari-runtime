@@ -74,7 +74,7 @@ jobs:
           PY
           )"
           test -n "$url"
-          curl --fail --location --retry 3 -o /tmp/freemint.zip "$url"
+          curl --fail --location --retry 6 --retry-all-errors --connect-timeout 15 --max-time 180 -o /tmp/freemint.zip "$url"
           unzip -l /tmp/freemint.zip | tee freemint-contents.txt
           unzip -q /tmp/freemint.zip -d /tmp/freemint
           find /tmp/freemint -type f \
