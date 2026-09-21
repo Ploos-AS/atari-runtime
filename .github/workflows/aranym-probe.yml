@@ -19,7 +19,7 @@ jobs:
       - name: Install ARAnyM
         run: |
           sudo apt-get update
-          sudo apt-get install -y aranym dosfstools mtools
+          sudo apt-get install -y aranym
       - name: Record ARAnyM baseline
         run: |
           set -eux
@@ -99,16 +99,6 @@ jobs:
           test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           test -s aranym-freemint/C/MINT/MINT.CNF
           test -s aranym-freemint/C/MINT.CNF
-          truncate -s 32M aranym-freemint-c.img
-          mkfs.vfat -F 16 -n FREEMINT aranym-freemint-c.img
-          mmd -i aranym-freemint-c.img ::AUTO ::MINT ::MINT/1-18-0
-          mcopy -i aranym-freemint-c.img aranym-freemint/C/AUTO/MINT030.PRG ::AUTO/MINT030.PRG
-          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT.CNF ::MINT.CNF
-          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/MINT.CNF ::MINT/MINT.CNF
-          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/MINT.CNF ::MINT/1-18-0/MINT.CNF
-          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/ARANYM.XFS ::MINT/1-18-0/ARANYM.XFS
-          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS ::MINT/1-18-0/HOSTFS.XFS
-          mdir -i aranym-freemint-c.img :: | tee freemint-fat-root.txt
           test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
             aranym-freemint/C/AUTO/MINTARA.PRG \
@@ -116,7 +106,7 @@ jobs:
             | tee freemint-aranym-files.sha256
           {
             echo "freemint_version=1.18.0"
-            echo "kernel=AUTO/MINT030.PRG"
+            echo "kernel=AUTO/MINTARA.PRG"
             echo "xfs=MINT/1-18-0/ARANYM.XFS"
             echo "status=STAGED"
           } | tee freemint-aranym-stage.txt
@@ -126,9 +116,9 @@ jobs:
           cat > aranym-freemint.cfg <<EOF
           [GLOBAL]
           FastRAM = 64
+          FixedMemoryOffset = 0
           EmuTOS = $HOME/.aranym/emutos-aranym.img
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG
-          BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
           BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1
           [IDE0]
           Present = No
@@ -138,7 +128,6 @@ jobs:
           Path =
           [HOSTFS]
           C = $GITHUB_WORKSPACE/aranym-freemint/C
-          [BOOT]
           BootDrive = C
           EOF
           test -s aranym-freemint.cfg
@@ -147,6 +136,7 @@ jobs:
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
           grep -F "BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1" aranym-freemint.cfg
           grep -F "FastRAM = 64" aranym-freemint.cfg
+          grep -F "FixedMemoryOffset = 0" aranym-freemint.cfg
           printf '\n=== ARAnyM startup log ===\n'
           # printed after the emulator run below
       - name: Probe headless ARAnyM + EmuTOS startup
@@ -159,31 +149,21 @@ jobs:
           sleep 1
           aranym -N -e -c "$GITHUB_WORKSPACE/aranym-freemint.cfg" > aranym-startup.log 2>&1 &
           aranym_pid=$!
-          for i in $(seq 1 30); do
-            if mdir -i aranym-freemint-c.img ::MINT/BOOT.LOG >/dev/null 2>&1; then
-              echo "freemint_boot_log_appeared_after=${i}s" | tee freemint-guest-result.txt
-              break
-            fi
-            sleep 1
-          done
+          sleep 30
           import -display :99 -window root aranym-emutos.png
           identify aranym-emutos.png | tee aranym-framebuffer.txt
           cat aranym-startup.log | tee aranym-startup-visible.log
           grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|panic|fatal|error' aranym-startup.log | tee freemint-bootstrap-trace.txt || true
-          strings aranym-freemint/C/AUTO/MINT030.PRG | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
+          strings aranym-freemint/C/AUTO/MINTARA.PRG | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
           colors="$(convert aranym-emutos.png -format %c histogram:info:- | wc -l)"
           printf 'aranym_framebuffer_colors=%s\n' "$colors" | tee -a aranym-framebuffer.txt
           test "$colors" -gt 1
-          if mdir -i aranym-freemint-c.img ::MINT/BOOT.LOG >/dev/null 2>&1; then
-            mcopy -i aranym-freemint-c.img ::MINT/BOOT.LOG freemint-boot.log
+          if test -s aranym-freemint/C/MINT/BOOT.LOG; then
+            cp aranym-freemint/C/MINT/BOOT.LOG freemint-boot.log
+            echo "freemint_boot_log=present" | tee freemint-guest-result.txt
             grep -Ei 'MiNT|FreeMiNT' freemint-boot.log | head -40 | tee -a freemint-guest-result.txt || true
           else
-            echo "freemint_boot_log=missing" | tee -a freemint-guest-result.txt
-          fi
-          mdir -i aranym-freemint-c.img ::MINT | tee freemint-fat-mint.txt || true
-          mcopy -i aranym-freemint-c.img ::MINT/BOOT.LOG freemint-boot.log 2>/dev/null || true
-          if test -s freemint-boot.log; then
-            grep -Ei 'MiNT|FreeMiNT' freemint-boot.log | head -40 | tee -a freemint-guest-result.txt || true
+            echo "freemint_boot_log=missing" | tee freemint-guest-result.txt
           fi
           kill "$aranym_pid" 2>/dev/null || true
           wait "$aranym_pid" 2>/dev/null || true
