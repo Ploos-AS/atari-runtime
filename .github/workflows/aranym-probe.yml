@@ -93,15 +93,14 @@ jobs:
           test -s aranym-freemint/C/mint/1-18-0/mint.cnf
           test -s aranym-freemint/C/mint/1-18-0/aranym.xfs
           test -s aranym-freemint/C/mint/1-18-0/hostfs.xfs
-          test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
             aranym-freemint/C/mint/1-18-0/mintara.prg \
             aranym-freemint/C/mint/1-18-0/aranym.xfs \
             | tee freemint-aranym-files.sha256
           {
             echo "freemint_version=1.18.0"
-            echo "kernel=AUTO/MINTARA.PRG"
-            echo "xfs=MINT/1-18-0/ARANYM.XFS"
+            echo "kernel=mint/1-18-0/mintara.prg"
+            echo "xfs=mint/1-18-0/aranym.xfs"
             echo "status=STAGED"
           } | tee freemint-aranym-stage.txt
       - name: Configure ARAnyM hostfs C drive for FreeMiNT
