@@ -31,9 +31,9 @@ jobs:
         run: |
           set -eux
           curl --fail --location --retry 3 -o /tmp/emutos.zip \
-            https://sourceforge.net/projects/emutos/files/emutos/1.4/emutos-1.4.zip/download
+            https://sourceforge.net/projects/emutos/files/emutos/1.4/emutos-512k-1.4.zip/download
           unzip -q /tmp/emutos.zip -d /tmp/emutos
-          rom="$(find /tmp/emutos -type f -name 'etos512k.img' -print -quit)"
+          rom="$(find /tmp/emutos -type f \( -name 'etos512*.img' -o -name 'etos512*.rom' \) -print -quit)"
           test -n "$rom"
           mkdir -p "$HOME/.aranym"
           cp "$rom" "$HOME/.aranym/emutos-aranym.img"
