@@ -128,6 +128,8 @@ jobs:
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
           grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
+          printf '\n=== ARAnyM startup log ===\n'
+          # printed after the emulator run below
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
@@ -147,6 +149,8 @@ jobs:
           done
           import -display :99 -window root aranym-emutos.png
           identify aranym-emutos.png | tee aranym-framebuffer.txt
+          cat aranym-startup.log | tee aranym-startup-visible.log
+          grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|panic|fatal|error' aranym-startup.log | tee freemint-bootstrap-trace.txt || true
           strings aranym-freemint/C/AUTO/MINTARA.PRG | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
           colors="$(convert aranym-emutos.png -format %c histogram:info:- | wc -l)"
           printf 'aranym_framebuffer_colors=%s\n' "$colors" | tee -a aranym-framebuffer.txt
@@ -185,6 +189,8 @@ jobs:
             aranym-manual.txt
             aranym-package-docs.txt
             aranym-config-doc-hits.txt
+            aranym-startup-visible.log
+            freemint-bootstrap-trace.txt
             aranym-help.txt
             aranym-emutos.sha256
             freemint-release.txt
