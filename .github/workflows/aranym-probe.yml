@@ -107,9 +107,12 @@ jobs:
           FastRAM = 64
           [HOSTFS]
           A = $GITHUB_WORKSPACE/aranym-freemint/C
+          [BOOT]
+          BootDrive = C
           EOF
           test -s aranym-freemint.cfg
           grep -F "$GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
+          grep -F "BootDrive = C" aranym-freemint.cfg
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
