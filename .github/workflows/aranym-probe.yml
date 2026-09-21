@@ -87,14 +87,16 @@ jobs:
           mkdir -p aranym-freemint/C/AUTO aranym-freemint/C/MINT/1-18-0
           mkdir -p aranym-freemint/C/MINT
           cp /tmp/freemint/freemint/auto/mintara.prg aranym-freemint/C/AUTO/MINTARA.PRG
-          cp /tmp/freemint/freemint/auto/mint040.prg aranym-freemint/C/AUTO/MINT040.PRG
+          cp /tmp/freemint/freemint/auto/mint040.prg aranym-freemint/C/AUTO/MINT030.PRG
+          cp /tmp/freemint/freemint/auto/mint030.prg aranym-freemint/C/AUTO/MINT030.PRG
           cp /tmp/freemint/freemint/driver/xfs/aranym.xfs aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           cp /tmp/freemint/freemint/driver/xfs/hostfs.xfs aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/1-18-0/MINT.CNF
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/MINT.CNF
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT.CNF
           test -s aranym-freemint/C/AUTO/MINTARA.PRG
-          test -s aranym-freemint/C/AUTO/MINT040.PRG
+          test -s aranym-freemint/C/AUTO/MINT030.PRG
+          test -s aranym-freemint/C/AUTO/MINT030.PRG
           test -s aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           test -s aranym-freemint/C/MINT/MINT.CNF
@@ -106,7 +108,7 @@ jobs:
             | tee freemint-aranym-files.sha256
           {
             echo "freemint_version=1.18.0"
-            echo "kernel=AUTO/MINT040.PRG"
+            echo "kernel=AUTO/MINT030.PRG"
             echo "xfs=MINT/1-18-0/ARANYM.XFS"
             echo "status=STAGED"
           } | tee freemint-aranym-stage.txt
@@ -117,9 +119,8 @@ jobs:
           [GLOBAL]
           FastRAM = 0
           EmuTOS = $HOME/.aranym/emutos-aranym.img
-          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT040.PRG
+          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
-          BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO BOOT_DRIVE=C
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO BOOT_DRIVE=C
           [HOSTFS]
           C = $GITHUB_WORKSPACE/aranym-freemint/C
@@ -129,7 +130,7 @@ jobs:
           test -s aranym-freemint.cfg
           grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
-          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT040.PRG" aranym-freemint.cfg
+          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG" aranym-freemint.cfg
           grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
           grep -F "FastRAM = 0" aranym-freemint.cfg
           printf '\n=== ARAnyM startup log ===\n'
@@ -155,7 +156,7 @@ jobs:
           identify aranym-emutos.png | tee aranym-framebuffer.txt
           cat aranym-startup.log | tee aranym-startup-visible.log
           grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|panic|fatal|error' aranym-startup.log | tee freemint-bootstrap-trace.txt || true
-          strings aranym-freemint/C/AUTO/MINT040.PRG | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
+          strings aranym-freemint/C/AUTO/MINT030.PRG | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
           colors="$(convert aranym-emutos.png -format %c histogram:info:- | wc -l)"
           printf 'aranym_framebuffer_colors=%s\n' "$colors" | tee -a aranym-framebuffer.txt
           test "$colors" -gt 1
