@@ -177,6 +177,10 @@ jobs:
           name: aranym-m4-1-baseline
           path: |
             aranym-version.txt
+            aranym-package-files.txt
+            aranym-manual.txt
+            aranym-package-docs.txt
+            aranym-config-doc-hits.txt
             aranym-help.txt
             aranym-emutos.sha256
             freemint-release.txt
