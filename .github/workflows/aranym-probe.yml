@@ -101,12 +101,6 @@ jobs:
           test -s aranym-freemint/C/MINT.CNF
           truncate -s 32M aranym-freemint-c.img
           mkfs.vfat -F 16 -n FREEMINT aranym-freemint-c.img
-          python3 - <<'PY'
-          p='aranym-freemint-c.img'
-          b=bytearray(open(p,'rb').read(512))
-          b[510]=0x55; b[511]=0xAA
-          open(p,'r+b').write(b)
-          PY
           mmd -i aranym-freemint-c.img ::AUTO ::MINT ::MINT/1-18-0
           mcopy -i aranym-freemint-c.img aranym-freemint/C/AUTO/MINT030.PRG ::AUTO/MINT030.PRG
           mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT.CNF ::MINT.CNF
@@ -115,7 +109,6 @@ jobs:
           mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/ARANYM.XFS ::MINT/1-18-0/ARANYM.XFS
           mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS ::MINT/1-18-0/HOSTFS.XFS
           mdir -i aranym-freemint-c.img :: | tee freemint-fat-root.txt
-          od -An -tx1 -j510 -N2 aranym-freemint-c.img | tee freemint-fat-signature.txt
           test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
             aranym-freemint/C/AUTO/MINTARA.PRG \
@@ -140,7 +133,7 @@ jobs:
           [IDE0]
           Present = Yes
           IsCDROM = No
-          ByteSwap = Yes
+          ByteSwap = No
           ReadOnly = No
           Path = $GITHUB_WORKSPACE/aranym-freemint-c.img
           [HOSTFS]
@@ -150,7 +143,7 @@ jobs:
           EOF
           test -s aranym-freemint.cfg
           grep -F "Path = $GITHUB_WORKSPACE/aranym-freemint-c.img" aranym-freemint.cfg
-          grep -F "ByteSwap = Yes" aranym-freemint.cfg
+          grep -F "ByteSwap = No" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG" aranym-freemint.cfg
           grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
