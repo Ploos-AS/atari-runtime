@@ -43,10 +43,17 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - Steem SSE + EmuTOS guest execution qualified in GitHub Actions run #120
 - exact GEMDOS marker verified from the AUTO floppy after CRLF normalization
 
-### M4.1 — ARAnyM extended runtime — NEXT
+### M4.1 — ARAnyM + EmuTOS boot baseline — PASS
 
 ## M4 — Extended runtime
+- ARAnyM + EmuTOS headless boot with framebuffer evidence qualified in GitHub Actions run #5
 - ARAnyM extended FreeMiNT/TT/Falcon-oriented profiles
+
+### M4.2 — FreeMiNT guest qualification — NEXT
+- provision a redistributable FreeMiNT guest environment
+- boot FreeMiNT under ARAnyM in CI
+- require guest-side execution evidence, not emulator liveness alone
+- retain logs and machine-readable qualification artifacts
 - TT/Falcon profiles where supported
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate
