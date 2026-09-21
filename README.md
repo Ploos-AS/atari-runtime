@@ -10,7 +10,7 @@ The M2 contract uses the canonical `MINIMAL.PRG` runtime probe produced by `atar
 
 ## Qualification policy
 
-Emulator qualification is the authoritative Ploos-AS Atari runtime qualification. Physical Atari hardware is not a release gate. Hatari is the reference emulator; Steem SSE is the planned independent ST/STE cross-emulator, while ARAnyM is reserved for later extended FreeMiNT/TT/Falcon-oriented profiles. EmuTOS is the preferred freely redistributable TOS-compatible ROM for automated CI where technically suitable.
+Emulator qualification is the authoritative Ploos-AS Atari runtime qualification. Physical Atari hardware is not a release gate. Hatari is the reference emulator; Steem SSE is the qualified independent ST/STE cross-emulator, while ARAnyM is reserved for later extended FreeMiNT/TT/Falcon-oriented profiles. EmuTOS is the preferred freely redistributable TOS-compatible ROM for automated CI where technically suitable.
 
 Baseline target: Hatari + EmuTOS. Cross-emulator target: the same artifact also passes Steem SSE. Physical-hardware testing, if contributed externally, is supplemental evidence only.
 
@@ -20,9 +20,10 @@ Baseline target: Hatari + EmuTOS. Cross-emulator target: the same artifact also 
 - **M1 — Hatari infrastructure — PASS**
 - **M2 — TOS runtime qualification — PASS**
 - **M3.1 — Reusable consumer qualification — PASS**
-- **M3.2 — Steem SSE cross-emulator qualification — NEXT**
+- **M3.2 — Steem SSE cross-emulator qualification — PASS**
+- **M4.1 — ARAnyM extended runtime — NEXT**
 
-M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. M3.1 reusable consumer qualification was independently self-tested on both profiles in reusable qualification self-test run #1. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS.
+M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. M3.1 reusable consumer qualification was independently self-tested on both profiles in reusable qualification self-test run #1. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS. M3.2 was qualified in Steem SSE + EmuTOS in GitHub Actions run #120: the same canonical `MINIMAL.PRG` executed from `A:\\AUTO\\PROBE.PRG`, created `MINPASS.TXT`, and the exact marker was verified after normalizing GEMDOS CRLF line endings.
 
 ## M2 qualification
 
