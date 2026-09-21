@@ -87,7 +87,6 @@ jobs:
           mkdir -p aranym-freemint/C/AUTO aranym-freemint/C/MINT/1-18-0
           mkdir -p aranym-freemint/C/MINT
           cp /tmp/freemint/freemint/auto/mintara.prg aranym-freemint/C/AUTO/MINTARA.PRG
-          cp /tmp/freemint/freemint/auto/mint040.prg aranym-freemint/C/AUTO/MINT030.PRG
           cp /tmp/freemint/freemint/auto/mint030.prg aranym-freemint/C/AUTO/MINT030.PRG
           cp /tmp/freemint/freemint/driver/xfs/aranym.xfs aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           cp /tmp/freemint/freemint/driver/xfs/hostfs.xfs aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
@@ -95,7 +94,6 @@ jobs:
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/MINT.CNF
           cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT.CNF
           test -s aranym-freemint/C/AUTO/MINTARA.PRG
-          test -s aranym-freemint/C/AUTO/MINT030.PRG
           test -s aranym-freemint/C/AUTO/MINT030.PRG
           test -s aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
@@ -117,7 +115,7 @@ jobs:
           set -eux
           cat > aranym-freemint.cfg <<EOF
           [GLOBAL]
-          FastRAM = 0
+          FastRAM = 64
           EmuTOS = $HOME/.aranym/emutos-aranym.img
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
@@ -132,7 +130,7 @@ jobs:
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG" aranym-freemint.cfg
           grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
-          grep -F "FastRAM = 0" aranym-freemint.cfg
+          grep -F "FastRAM = 64" aranym-freemint.cfg
           printf '\n=== ARAnyM startup log ===\n'
           # printed after the emulator run below
       - name: Probe headless ARAnyM + EmuTOS startup
