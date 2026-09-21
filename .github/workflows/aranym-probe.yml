@@ -140,7 +140,7 @@ jobs:
           [IDE0]
           Present = Yes
           IsCDROM = No
-          ByteSwap = No
+          ByteSwap = Yes
           ReadOnly = No
           Path = $GITHUB_WORKSPACE/aranym-freemint-c.img
           [HOSTFS]
@@ -150,6 +150,7 @@ jobs:
           EOF
           test -s aranym-freemint.cfg
           grep -F "Path = $GITHUB_WORKSPACE/aranym-freemint-c.img" aranym-freemint.cfg
+          grep -F "ByteSwap = Yes" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG" aranym-freemint.cfg
           grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
