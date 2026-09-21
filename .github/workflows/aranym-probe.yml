@@ -84,25 +84,19 @@ jobs:
       - name: Stage FreeMiNT ARAnyM kernel tree
         run: |
           set -eux
-          mkdir -p aranym-freemint/C/AUTO aranym-freemint/C/MINT/1-18-0
-          mkdir -p aranym-freemint/C/MINT
-          cp /tmp/freemint/freemint/auto/mintara.prg aranym-freemint/C/AUTO/MINTARA.PRG
-          cp /tmp/freemint/freemint/auto/mint030.prg aranym-freemint/C/AUTO/MINT030.PRG
-          cp /tmp/freemint/freemint/driver/xfs/aranym.xfs aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
-          cp /tmp/freemint/freemint/driver/xfs/hostfs.xfs aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
-          cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/1-18-0/MINT.CNF
-          cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/MINT.CNF
-          cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT.CNF
-          test -s aranym-freemint/C/AUTO/MINTARA.PRG
-          test -s aranym-freemint/C/AUTO/MINT030.PRG
-          test -s aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
-          test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
-          test -s aranym-freemint/C/MINT/MINT.CNF
-          test -s aranym-freemint/C/MINT.CNF
+          mkdir -p aranym-freemint/C/mint/1-18-0
+          cp -a /tmp/freemint/freemint/mint/1-18-0/. aranym-freemint/C/mint/1-18-0/
+          cp /tmp/freemint/freemint/auto/mintara.prg aranym-freemint/C/mint/1-18-0/mintara.prg
+          cp /tmp/freemint/freemint/driver/xfs/aranym.xfs aranym-freemint/C/mint/1-18-0/aranym.xfs
+          cp /tmp/freemint/freemint/driver/xfs/hostfs.xfs aranym-freemint/C/mint/1-18-0/hostfs.xfs
+          test -s aranym-freemint/C/mint/1-18-0/mintara.prg
+          test -s aranym-freemint/C/mint/1-18-0/mint.cnf
+          test -s aranym-freemint/C/mint/1-18-0/aranym.xfs
+          test -s aranym-freemint/C/mint/1-18-0/hostfs.xfs
           test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
-            aranym-freemint/C/AUTO/MINTARA.PRG \
-            aranym-freemint/C/MINT/1-18-0/ARANYM.XFS \
+            aranym-freemint/C/mint/1-18-0/mintara.prg \
+            aranym-freemint/C/mint/1-18-0/aranym.xfs \
             | tee freemint-aranym-files.sha256
           {
             echo "freemint_version=1.18.0"
@@ -118,7 +112,7 @@ jobs:
           FastRAM = 64
           FixedMemoryOffset = 0
           EmuTOS = $HOME/.aranym/emutos-aranym.img
-          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG
+          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/mint/1-18-0/mintara.prg
           BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1
           [IDE0]
           Present = No
@@ -129,11 +123,23 @@ jobs:
           [HOSTFS]
           C = $GITHUB_WORKSPACE/aranym-freemint/C
           BootDrive = C
+          GMTime = No
+          EpsEnabled = No
+          EpsMax = 20
+          [JIT]
+          JIT = Yes
+          JITFPU = Yes
+          JITCacheSize = 8192
+          JITLazyFlush = 1
+          JITInline = No
+          [TOS]
+          Cookie_MCH = 50000
+          RedirConsole = No
           EOF
           test -s aranym-freemint.cfg
           grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
-          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINTARA.PRG" aranym-freemint.cfg
+          grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/mint/1-18-0/mintara.prg" aranym-freemint.cfg
           grep -F "BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1" aranym-freemint.cfg
           grep -F "FastRAM = 64" aranym-freemint.cfg
           grep -F "FixedMemoryOffset = 0" aranym-freemint.cfg
@@ -154,7 +160,7 @@ jobs:
           identify aranym-emutos.png | tee aranym-framebuffer.txt
           cat aranym-startup.log | tee aranym-startup-visible.log
           grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|panic|fatal|error' aranym-startup.log | tee freemint-bootstrap-trace.txt || true
-          strings aranym-freemint/C/AUTO/MINTARA.PRG | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
+          strings aranym-freemint/C/mint/1-18-0/mintara.prg | grep -Ei 'FreeMiNT|MiNT' | head -20 | tee freemint-kernel-identity.txt || true
           colors="$(convert aranym-emutos.png -format %c histogram:info:- | wc -l)"
           printf 'aranym_framebuffer_colors=%s\n' "$colors" | tee -a aranym-framebuffer.txt
           test "$colors" -gt 1
