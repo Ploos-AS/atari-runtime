@@ -99,6 +99,17 @@ jobs:
             echo "xfs=MINT/1-18-0/ARANYM.XFS"
             echo "status=STAGED"
           } | tee freemint-aranym-stage.txt
+      - name: Configure ARAnyM hostfs C drive for FreeMiNT
+        run: |
+          set -eux
+          cat > aranym-freemint.cfg <<EOF
+          [GLOBAL]
+          FastRAM = 64
+          [HOSTFS]
+          A = $GITHUB_WORKSPACE/aranym-freemint/C
+          EOF
+          test -s aranym-freemint.cfg
+          grep -F "$GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
@@ -107,7 +118,7 @@ jobs:
           xvfb_pid=$!
           export DISPLAY=:99
           sleep 1
-          aranym -N -e > aranym-startup.log 2>&1 &
+          aranym -N -e -c "$GITHUB_WORKSPACE/aranym-freemint.cfg" > aranym-startup.log 2>&1 &
           aranym_pid=$!
           sleep 10
           import -display :99 -window root aranym-emutos.png
@@ -147,6 +158,7 @@ jobs:
             freemint-boot-candidates.txt
             freemint-aranym-files.sha256
             freemint-aranym-stage.txt
+            aranym-freemint.cfg
             aranym-startup.log
             aranym-startup-result.txt
             aranym-xvfb.log
