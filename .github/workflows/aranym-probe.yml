@@ -19,7 +19,7 @@ jobs:
       - name: Install ARAnyM
         run: |
           sudo apt-get update
-          sudo apt-get install -y aranym
+          sudo apt-get install -y aranym dosfstools mtools
       - name: Record ARAnyM baseline
         run: |
           set -eux
@@ -152,7 +152,7 @@ jobs:
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
-          sudo apt-get install -y xvfb imagemagick x11-utils dosfstools mtools
+          sudo apt-get install -y xvfb imagemagick x11-utils
           Xvfb :99 -screen 0 1024x768x24 > aranym-xvfb.log 2>&1 &
           xvfb_pid=$!
           export DISPLAY=:99
