@@ -503,7 +503,18 @@ jobs:
           # Do not inject a guessed reset-toolbar coordinate here. Steem has
           # already loaded drive A from steem.ini before the first Run, so the
           # initial Run is the cold boot used for AUTO qualification.
-          sleep 15
+          for boot_wait in $(seq 1 12); do
+            if [ -s steem-linux/bin/PRG/MINPASS.TXT ]; then
+              echo "AUTO marker appeared after $((boot_wait * 5)) seconds"
+              break
+            fi
+            if mdir -i steem-linux/bin/minimal-auto.st ::/MINPASS.TXT >/dev/null 2>&1 || \
+               mdir -i steem-linux/bin/minimal-auto.st ::/AUTO/MINPASS.TXT >/dev/null 2>&1; then
+              echo "AUTO floppy marker appeared after $((boot_wait * 5)) seconds"
+              break
+            fi
+            sleep 5
+          done
           xdotool getmouselocation | tee steem-sse-run-click.txt
           import -display :99 -window root steem-sse-emutos-boot.png
           # M3.2c: exercise the running guest desktop directly. First prove
