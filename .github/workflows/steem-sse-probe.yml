@@ -493,6 +493,10 @@ jobs:
           sleep 0.2
           xdotool mouseup 1
           sleep 2
+          # The first Run click now has deterministic evidence: it transitions
+          # Steem from the stopped black display into its white boot/status
+          # screen. Give EmuTOS substantially longer than the old 15-second
+          # window to finish cold boot and AUTO processing on the CI runner.
           import -display :99 -window "$win" steem-sse-after-run.png
           compare -metric AE steem-sse-before-run.png steem-sse-after-run.png null: 2>steem-sse-run-pixel-diff.txt || true
           xdotool search --onlyvisible --name '.*' getwindowname %@ 2>/dev/null | tee steem-sse-after-run-windows.txt || true
