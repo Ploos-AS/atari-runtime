@@ -61,6 +61,26 @@ jobs:
               print("asset="+a.get("name","")+"\t"+a.get("browser_download_url",""))
           PY
           grep -q '^tag=.' freemint-release.txt
+      - name: Inspect FreeMiNT 1.18.0 distribution
+        run: |
+          set -eux
+          url="$(python3 - <<'PY'
+          import json
+          d=json.load(open("freemint-release.json"))
+          for a in d.get("assets",[]):
+              if a.get("name","").endswith(".zip"):
+                  print(a["browser_download_url"])
+                  break
+          PY
+          )"
+          test -n "$url"
+          curl --fail --location --retry 3 -o /tmp/freemint.zip "$url"
+          unzip -l /tmp/freemint.zip | tee freemint-contents.txt
+          unzip -q /tmp/freemint.zip -d /tmp/freemint
+          find /tmp/freemint -type f \
+            \( -iname '*aranym*' -o -iname 'mint*.prg' -o -iname 'mint*.xfs' -o -iname '*kernel*' \) \
+            -printf '%P\n' | sort | tee freemint-boot-candidates.txt
+          test -s freemint-boot-candidates.txt
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
@@ -105,6 +125,8 @@ jobs:
             aranym-emutos.sha256
             freemint-release.txt
             freemint-release.json
+            freemint-contents.txt
+            freemint-boot-candidates.txt
             aranym-startup.log
             aranym-startup-result.txt
             aranym-xvfb.log
