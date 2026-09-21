@@ -570,7 +570,11 @@ jobs:
             mcopy -i steem-linux/bin/minimal-auto.st ::/AUTO/MINPASS.TXT steem-linux/bin/PRG/MINPASS.TXT || true
           fi
           test -s steem-linux/bin/PRG/MINPASS.TXT
-          grep -Fx "$marker" steem-linux/bin/PRG/MINPASS.TXT
+          # GEMDOS text files use CRLF. Normalize the guest marker before
+          # exact comparison so the qualification checks content rather than
+          # host-vs-guest newline convention.
+          tr -d '\r' < steem-linux/bin/PRG/MINPASS.TXT > steem-linux/bin/PRG/MINPASS.normalized.txt
+          grep -Fx "$marker" steem-linux/bin/PRG/MINPASS.normalized.txt
           printf 'guest_marker=PASS\n' | tee -a steem-sse-result.txt
 
       - name: Collect GDB backtrace after startup crash
