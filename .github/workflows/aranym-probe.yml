@@ -27,16 +27,29 @@ jobs:
           dpkg-query -W -f='aranym_version=${Version}\n' aranym | tee aranym-version.txt
           (aranym --help || true) > aranym-help.txt 2>&1
           test -s aranym-version.txt
-      - name: Probe headless ARAnyM startup
+      - name: Provision EmuTOS for ARAnyM
+        run: |
+          set -eux
+          curl --fail --location --retry 3 -o /tmp/emutos.zip \
+            https://sourceforge.net/projects/emutos/files/emutos/1.4/emutos-1.4.zip/download
+          unzip -q /tmp/emutos.zip -d /tmp/emutos
+          rom="$(find /tmp/emutos -type f -name 'etos512k.img' -print -quit)"
+          test -n "$rom"
+          mkdir -p "$HOME/.aranym"
+          cp "$rom" "$HOME/.aranym/emutos-aranym.img"
+          test -s "$HOME/.aranym/emutos-aranym.img"
+          sha256sum "$HOME/.aranym/emutos-aranym.img" | tee aranym-emutos.sha256
+      - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
           sudo apt-get install -y xvfb
-          timeout 8s xvfb-run -a aranym -N > aranym-startup.log 2>&1 || rc=$?
+          timeout 12s xvfb-run -a aranym -N -e > aranym-startup.log 2>&1 || rc=$?
           rc=${rc:-0}
           # timeout=124 is expected without a guest kernel; anything else must
           # still leave diagnostic output for the next FreeMiNT integration step.
           test "$rc" -eq 0 -o "$rc" -eq 124
           test -s aranym-startup.log
+          ! grep -Fq "No operating system found" aranym-startup.log
           printf 'aranym_startup_exit=%s\n' "$rc" | tee aranym-startup-result.txt
       - name: Record M4.1 host capabilities
         run: |
@@ -54,6 +67,7 @@ jobs:
           path: |
             aranym-version.txt
             aranym-help.txt
+            aranym-emutos.sha256
             aranym-startup.log
             aranym-startup-result.txt
             aranym-baseline.txt
