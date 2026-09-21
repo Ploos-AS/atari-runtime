@@ -27,6 +27,17 @@ jobs:
           dpkg-query -W -f='aranym_version=${Version}\n' aranym | tee aranym-version.txt
           (aranym --help || true) > aranym-help.txt 2>&1
           test -s aranym-version.txt
+      - name: Probe headless ARAnyM startup
+        run: |
+          set -eux
+          sudo apt-get install -y xvfb
+          timeout 8s xvfb-run -a aranym -N > aranym-startup.log 2>&1 || rc=$?
+          rc=${rc:-0}
+          # timeout=124 is expected without a guest kernel; anything else must
+          # still leave diagnostic output for the next FreeMiNT integration step.
+          test "$rc" -eq 0 -o "$rc" -eq 124
+          test -s aranym-startup.log
+          printf 'aranym_startup_exit=%s\n' "$rc" | tee aranym-startup-result.txt
       - name: Record M4.1 host capabilities
         run: |
           {
@@ -43,5 +54,7 @@ jobs:
           path: |
             aranym-version.txt
             aranym-help.txt
+            aranym-startup.log
+            aranym-startup-result.txt
             aranym-baseline.txt
           if-no-files-found: error
