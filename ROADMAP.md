@@ -33,13 +33,17 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - evidence artifact upload
 - self-test run #1 PASS on both profiles
 
-### M3.2 — Steem SSE cross-emulator qualification — NEXT
+### M3.2 — Steem SSE cross-emulator qualification — PASS
 - keep Hatari + EmuTOS as the authoritative baseline
 - retain ST and STE profiles
 - persistent machine-readable qualification evidence
 - retain useful emulator logs/traces
 - add Steem SSE as an independent ST/STE cross-emulator
 - execute the same canonical atari-dev artifact across supported emulators
+- Steem SSE + EmuTOS guest execution qualified in GitHub Actions run #120
+- exact GEMDOS marker verified from the AUTO floppy after CRLF normalization
+
+### M4.1 — ARAnyM extended runtime — NEXT
 
 ## M4 — Extended runtime
 - ARAnyM extended FreeMiNT/TT/Falcon-oriented profiles
