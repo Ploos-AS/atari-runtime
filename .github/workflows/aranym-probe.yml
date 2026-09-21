@@ -112,7 +112,7 @@ jobs:
           FixedMemoryOffset = 0
           EmuTOS = $HOME/.aranym/emutos-aranym.img
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/mint/1-18-0/mintara.prg
-          BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1
+          BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
           [IDE0]
           Present = No
           IsCDROM = No
@@ -139,7 +139,7 @@ jobs:
           grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/mint/1-18-0/mintara.prg" aranym-freemint.cfg
-          grep -F "BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1" aranym-freemint.cfg
+          grep -F "BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO" aranym-freemint.cfg
           grep -F "FastRAM = 64" aranym-freemint.cfg
           grep -F "FixedMemoryOffset = 0" aranym-freemint.cfg
           printf '\n=== ARAnyM startup log ===\n'
