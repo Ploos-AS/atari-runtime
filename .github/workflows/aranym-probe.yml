@@ -42,12 +42,25 @@ jobs:
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
-          sudo apt-get install -y xvfb
-          timeout 12s xvfb-run -a aranym -N -e > aranym-startup.log 2>&1 || rc=$?
+          sudo apt-get install -y xvfb imagemagick x11-utils
+          Xvfb :99 -screen 0 1024x768x24 > aranym-xvfb.log 2>&1 &
+          xvfb_pid=$!
+          export DISPLAY=:99
+          sleep 1
+          aranym -N -e > aranym-startup.log 2>&1 &
+          aranym_pid=$!
+          sleep 10
+          import -display :99 -window root aranym-emutos.png
+          identify aranym-emutos.png | tee aranym-framebuffer.txt
+          colors="$(convert aranym-emutos.png -format %c histogram:info:- | wc -l)"
+          printf 'aranym_framebuffer_colors=%s\n' "$colors" | tee -a aranym-framebuffer.txt
+          test "$colors" -gt 1
+          kill "$aranym_pid" 2>/dev/null || true
+          wait "$aranym_pid" 2>/dev/null || true
+          kill "$xvfb_pid" 2>/dev/null || true
+          rc=0
           rc=${rc:-0}
-          # timeout=124 is expected without a guest kernel; anything else must
-          # still leave diagnostic output for the next FreeMiNT integration step.
-          test "$rc" -eq 0 -o "$rc" -eq 124
+          test "$rc" -eq 0
           test -s aranym-startup.log
           ! grep -Fq "No operating system found" aranym-startup.log
           printf 'aranym_startup_exit=%s\n' "$rc" | tee aranym-startup-result.txt
@@ -70,5 +83,8 @@ jobs:
             aranym-emutos.sha256
             aranym-startup.log
             aranym-startup-result.txt
+            aranym-xvfb.log
+            aranym-emutos.png
+            aranym-framebuffer.txt
             aranym-baseline.txt
           if-no-files-found: error
