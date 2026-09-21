@@ -89,14 +89,13 @@ jobs:
           cp /tmp/freemint/freemint/auto/mintara.prg aranym-freemint/C/AUTO/MINTARA.PRG
           cp /tmp/freemint/freemint/driver/xfs/aranym.xfs aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           cp /tmp/freemint/freemint/driver/xfs/hostfs.xfs aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
-          cat > aranym-freemint/C/MINT/MINT.CNF <<'EOF'
-          # Minimal CI configuration for ARAnyM guest qualification.
-          # Keep boot deterministic; no desktop or networking is required.
-          EOF
+          cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/1-18-0/MINT.CNF
+          cp /tmp/freemint/freemint/mint/1-18-0/mint.cnf aranym-freemint/C/MINT/MINT.CNF
           test -s aranym-freemint/C/AUTO/MINTARA.PRG
           test -s aranym-freemint/C/MINT/1-18-0/ARANYM.XFS
           test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           test -s aranym-freemint/C/MINT/MINT.CNF
+          test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
             aranym-freemint/C/AUTO/MINTARA.PRG \
             aranym-freemint/C/MINT/1-18-0/ARANYM.XFS \
