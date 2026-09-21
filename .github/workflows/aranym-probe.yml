@@ -99,6 +99,16 @@ jobs:
           test -s aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS
           test -s aranym-freemint/C/MINT/MINT.CNF
           test -s aranym-freemint/C/MINT.CNF
+          truncate -s 32M aranym-freemint-c.img
+          mkfs.vfat -F 16 -n FREEMINT aranym-freemint-c.img
+          mmd -i aranym-freemint-c.img ::AUTO ::MINT ::MINT/1-18-0
+          mcopy -i aranym-freemint-c.img aranym-freemint/C/AUTO/MINT030.PRG ::AUTO/MINT030.PRG
+          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT.CNF ::MINT.CNF
+          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/MINT.CNF ::MINT/MINT.CNF
+          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/MINT.CNF ::MINT/1-18-0/MINT.CNF
+          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/ARANYM.XFS ::MINT/1-18-0/ARANYM.XFS
+          mcopy -i aranym-freemint-c.img aranym-freemint/C/MINT/1-18-0/HOSTFS.XFS ::MINT/1-18-0/HOSTFS.XFS
+          mdir -i aranym-freemint-c.img :: | tee freemint-fat-root.txt
           test -s aranym-freemint/C/MINT/1-18-0/MINT.CNF
           sha256sum \
             aranym-freemint/C/AUTO/MINTARA.PRG \
@@ -120,13 +130,19 @@ jobs:
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO BOOT_DRIVE=C
+          [IDE0]
+          Present = Yes
+          IsCDROM = No
+          ByteSwap = No
+          ReadOnly = No
+          Path = $GITHUB_WORKSPACE/aranym-freemint-c.img
           [HOSTFS]
-          C = $GITHUB_WORKSPACE/aranym-freemint/C
+          D = $GITHUB_WORKSPACE/aranym-freemint/C
           [BOOT]
           BootDrive = C
           EOF
           test -s aranym-freemint.cfg
-          grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
+          grep -F "Path = $GITHUB_WORKSPACE/aranym-freemint-c.img" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/AUTO/MINT030.PRG" aranym-freemint.cfg
           grep -F "BOOT_DRIVE=C" aranym-freemint.cfg
@@ -136,7 +152,7 @@ jobs:
       - name: Probe headless ARAnyM + EmuTOS startup
         run: |
           set -eux
-          sudo apt-get install -y xvfb imagemagick x11-utils
+          sudo apt-get install -y xvfb imagemagick x11-utils dosfstools mtools
           Xvfb :99 -screen 0 1024x768x24 > aranym-xvfb.log 2>&1 &
           xvfb_pid=$!
           export DISPLAY=:99
