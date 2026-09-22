@@ -39,6 +39,15 @@ jobs:
           cp "$rom" "$HOME/.aranym/emutos-aranym.img"
           test -s "$HOME/.aranym/emutos-aranym.img"
           sha256sum "$HOME/.aranym/emutos-aranym.img" | tee aranym-emutos.sha256
+      - name: Record current FreeMiNT snapshot source
+        run: |
+          cat > freemint-snapshot-source.txt <<'EOF'
+          FreeMiNT upstream recommends post-1.18 binary snapshots for current use.
+          Bootable snapshots: https://atari.joska.no/snapshots/freemint/bootable/
+          CPU snapshots: https://atari.joska.no/snapshots/freemint/cpu/
+          M4.2 keeps 1.18.0 as the reproducible legacy control until snapshot provisioning is added.
+          EOF
+
       - name: Discover current FreeMiNT release
         run: |
           set -eux
