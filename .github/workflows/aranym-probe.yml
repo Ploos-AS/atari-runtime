@@ -120,6 +120,12 @@ jobs:
           grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|pid |panic|fatal|error' aranym-snapshot-startup.log | tee freemint-snapshot-bootstrap-trace.txt || true
           grep -Fq 'NF BOOTSTRAP(' aranym-snapshot-startup.log
           grep -Fq 'NF BOOTSTRAP_ARGS(MEM_PROT=YES DEBUG_LEVEL=1)' aranym-snapshot-startup.log
+          grep -Eq 'pid +1 \(xaloader\): run_km\(xaaes\.km\) ok' aranym-snapshot-startup.log
+          {
+            echo 'freemint_snapshot_guest_execution=PASS'
+            echo 'evidence=xaloader executed xaaes.km inside FreeMiNT guest'
+            grep -E 'pid +1 \(xaloader\): run_km\(xaaes\.km\) ok' aranym-snapshot-startup.log
+          } | tee freemint-snapshot-guest-result.txt
           colors="$(convert aranym-snapshot.png -format %c histogram:info:- | wc -l)"
           echo "aranym_snapshot_framebuffer_colors=$colors" | tee -a aranym-snapshot-framebuffer.txt
           test "$colors" -gt 1
@@ -304,6 +310,7 @@ jobs:
             aranym-snapshot-framebuffer.txt
             aranym-snapshot.png
             freemint-snapshot-bootstrap-trace.txt
+            freemint-snapshot-guest-result.txt
             freemint-release.txt
             freemint-release.json
             freemint-contents.txt
