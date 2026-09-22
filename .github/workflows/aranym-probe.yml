@@ -48,6 +48,17 @@ jobs:
           M4.2 keeps 1.18.0 as the reproducible legacy control until snapshot provisioning is added.
           EOF
 
+      - name: Probe current FreeMiNT ARAnyM snapshot availability
+        run: |
+          set -eux
+          base="https://atari.joska.no/snapshots/freemint/bootable"
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 15 --max-time 180             -o freemint-latest-aranym.zip "$base/freemint-latest-aranym.zip"
+          unzip -l freemint-latest-aranym.zip | tee freemint-snapshot-contents.txt
+          sha256sum freemint-latest-aranym.zip | tee freemint-snapshot.sha256
+          unzip -q freemint-latest-aranym.zip -d /tmp/freemint-snapshot
+          find /tmp/freemint-snapshot -type f             \( -iname 'mintara.prg' -o -iname 'mint.cnf' -o -iname 'aranym.xfs' -o -iname 'hostfs.xfs' \)             -printf '%P\n' | sort | tee freemint-snapshot-boot-files.txt
+          test -s freemint-snapshot-boot-files.txt
+
       - name: Discover current FreeMiNT release
         run: |
           set -eux
@@ -213,6 +224,10 @@ jobs:
             freemint-bootstrap-trace.txt
             aranym-help.txt
             aranym-emutos.sha256
+            freemint-snapshot-source.txt
+            freemint-snapshot-contents.txt
+            freemint-snapshot.sha256
+            freemint-snapshot-boot-files.txt
             freemint-release.txt
             freemint-release.json
             freemint-contents.txt
