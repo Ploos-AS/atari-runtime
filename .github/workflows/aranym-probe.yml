@@ -122,6 +122,10 @@ jobs:
           EmuTOS = $HOME/.aranym/emutos-aranym.img
           Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/mint/1-18-0/mintara.prg
           BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO
+          BootDrive = C
+          GMTime = No
+          EpsEnabled = No
+          EpsMax = 20
           [IDE0]
           Present = No
           IsCDROM = No
@@ -129,11 +133,8 @@ jobs:
           ReadOnly = No
           Path =
           [HOSTFS]
+          symlinks = posix
           C = $GITHUB_WORKSPACE/aranym-freemint/C
-          BootDrive = C
-          GMTime = No
-          EpsEnabled = No
-          EpsMax = 20
           [JIT]
           JIT = Yes
           JITFPU = Yes
@@ -146,6 +147,7 @@ jobs:
           EOF
           test -s aranym-freemint.cfg
           grep -F "C = $GITHUB_WORKSPACE/aranym-freemint/C" aranym-freemint.cfg
+          grep -F "symlinks = posix" aranym-freemint.cfg
           grep -F "BootDrive = C" aranym-freemint.cfg
           grep -F "Bootstrap = $GITHUB_WORKSPACE/aranym-freemint/C/mint/1-18-0/mintara.prg" aranym-freemint.cfg
           grep -F "BootstrapArgs = DEBUG_LEVEL=1 BOOT_DELAY=0 MEM_PROT=NO" aranym-freemint.cfg
