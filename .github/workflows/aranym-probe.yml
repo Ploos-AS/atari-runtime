@@ -83,6 +83,11 @@ jobs:
           bashbin="$(find aranym-freemint-snapshot-C -type f -path '*/sys-root/bin/bash' -print -quit)"
           test -s "$bashbin"
           file "$bashbin" | tee freemint-snapshot-bash.txt
+          cat > aranym-freemint-snapshot-C/mint/ploos-pass.sh <<'EOF'
+          printf '%s\n' 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /c/PLOOSPASS.TXT
+          EOF
+          printf '\n# Ploos-AS M4.2 guest execution probe\nexec u:/bin/bash u:/c/mint/ploos-pass.sh\n' >> "$cnf"
+          tail -8 "$cnf" | tee freemint-snapshot-probe-hook.txt
 
       - name: Configure current FreeMiNT snapshot for ARAnyM
         run: |
@@ -130,6 +135,10 @@ jobs:
           grep -Fq 'NF BOOTSTRAP(' aranym-snapshot-startup.log
           grep -Fq 'NF BOOTSTRAP_ARGS(MEM_PROT=YES DEBUG_LEVEL=1)' aranym-snapshot-startup.log
           grep -Eq 'pid +1 \(xaloader\): run_km\(xaaes\.km\) ok' aranym-snapshot-startup.log
+          marker='aranym-freemint-snapshot-C/PLOOSPASS.TXT'
+          test -s "$marker"
+          tr -d '\r' < "$marker" | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS'
+          cp "$marker" freemint-snapshot-guest-marker.txt
           {
             echo 'freemint_snapshot_guest_execution=PASS'
             echo 'evidence=xaloader executed xaaes.km inside FreeMiNT guest'
@@ -316,6 +325,8 @@ jobs:
             freemint-snapshot-guest-tools.txt
             freemint-snapshot-mint-cnf-hooks.txt
             freemint-snapshot-bash.txt
+            freemint-snapshot-probe-hook.txt
+            freemint-snapshot-guest-marker.txt
             aranym-freemint-snapshot.cfg
             aranym-snapshot-startup.log
             aranym-snapshot-startup-visible.log
