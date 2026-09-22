@@ -59,6 +59,73 @@ jobs:
           find /tmp/freemint-snapshot -type f             \( -iname 'mintara.prg' -o -iname 'mint.cnf' -o -iname 'aranym.xfs' -o -iname 'hostfs.xfs' \)             -printf '%P\n' | sort | tee freemint-snapshot-boot-files.txt
           test -s freemint-snapshot-boot-files.txt
 
+      - name: Stage current FreeMiNT ARAnyM snapshot
+        run: |
+          set -eux
+          root="$(find /tmp/freemint-snapshot -type d -name drive_c -print -quit)"
+          test -n "$root"
+          kernel="$(find "$root" -type f -iname mintara.prg -print -quit)"
+          test -s "$kernel"
+          cp -a "$root" aranym-freemint-snapshot-C
+          rel="${kernel#"$root"/}"
+          {
+            echo "snapshot_root=$root"
+            echo "snapshot_kernel=$rel"
+            echo "snapshot_version=$(basename "$(dirname "$kernel")")"
+          } | tee freemint-snapshot-stage.txt
+          test -s "aranym-freemint-snapshot-C/$rel"
+
+      - name: Configure current FreeMiNT snapshot for ARAnyM
+        run: |
+          set -eux
+          rel="$(sed -n 's/^snapshot_kernel=//p' freemint-snapshot-stage.txt)"
+          cat > aranym-freemint-snapshot.cfg <<EOF
+          [GLOBAL]
+          FastRAM = 64
+          FixedMemoryOffset = 0
+          EmuTOS = $HOME/.aranym/emutos-aranym.img
+          Bootstrap = $GITHUB_WORKSPACE/aranym-freemint-snapshot-C/$rel
+          BootstrapArgs = MEM_PROT=YES DEBUG_LEVEL=1
+          BootDrive = C
+          GMTime = No
+          EpsEnabled = No
+          EpsMax = 20
+          [HOSTFS]
+          symlinks = posix
+          C = $GITHUB_WORKSPACE/aranym-freemint-snapshot-C
+          [JIT]
+          JIT = Yes
+          JITFPU = Yes
+          JITCacheSize = 8192
+          JITLazyFlush = 1
+          [TOS]
+          Cookie_MCH = 50000
+          RedirConsole = No
+          EOF
+          test -s aranym-freemint-snapshot.cfg
+
+      - name: Probe current FreeMiNT snapshot boot
+        run: |
+          set -eux
+          Xvfb :98 -screen 0 1024x768x24 > aranym-snapshot-xvfb.log 2>&1 &
+          xvfb_pid=$!
+          export DISPLAY=:98
+          sleep 1
+          aranym -N -e -c "$GITHUB_WORKSPACE/aranym-freemint-snapshot.cfg" > aranym-snapshot-startup.log 2>&1 &
+          aranym_pid=$!
+          sleep 30
+          import -display :98 -window root aranym-snapshot.png
+          identify aranym-snapshot.png | tee aranym-snapshot-framebuffer.txt
+          grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|panic|fatal|error' aranym-snapshot-startup.log | tee freemint-snapshot-bootstrap-trace.txt || true
+          colors="$(convert aranym-snapshot.png -format %c histogram:info:- | wc -l)"
+          echo "aranym_snapshot_framebuffer_colors=$colors" | tee -a aranym-snapshot-framebuffer.txt
+          test "$colors" -gt 1
+          kill "$aranym_pid" 2>/dev/null || true
+          wait "$aranym_pid" 2>/dev/null || true
+          kill "$xvfb_pid" 2>/dev/null || true
+          test -s aranym-snapshot-startup.log
+          ! grep -Fq "No operating system found" aranym-snapshot-startup.log
+
       - name: Discover current FreeMiNT release
         run: |
           set -eux
@@ -228,6 +295,12 @@ jobs:
             freemint-snapshot-contents.txt
             freemint-snapshot.sha256
             freemint-snapshot-boot-files.txt
+            freemint-snapshot-stage.txt
+            aranym-freemint-snapshot.cfg
+            aranym-snapshot-startup.log
+            aranym-snapshot-framebuffer.txt
+            aranym-snapshot.png
+            freemint-snapshot-bootstrap-trace.txt
             freemint-release.txt
             freemint-release.json
             freemint-contents.txt
