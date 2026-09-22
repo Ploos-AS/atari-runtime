@@ -77,6 +77,12 @@ jobs:
           probe="$(find aranym-freemint-snapshot-C -type f -iname 'echo' -perm -111 -print -quit || true)"
           printf 'snapshot_echo=%s\n' "$probe" | tee -a freemint-snapshot-stage.txt
           find aranym-freemint-snapshot-C -type f \( -iname 'bash' -o -iname 'sh' -o -iname 'echo' -o -iname 'touch' \) -printf '%P\n' | sort | tee freemint-snapshot-guest-tools.txt
+          cnf="$(find aranym-freemint-snapshot-C/mint -mindepth 2 -maxdepth 2 -type f -iname 'mint.cnf' -print -quit)"
+          test -s "$cnf"
+          grep -Ein 'exec|init|shell|bash|xaaes|xaloader' "$cnf" | tee freemint-snapshot-mint-cnf-hooks.txt || true
+          bashbin="$(find aranym-freemint-snapshot-C -type f -path '*/sys-root/bin/bash' -print -quit)"
+          test -s "$bashbin"
+          file "$bashbin" | tee freemint-snapshot-bash.txt
 
       - name: Configure current FreeMiNT snapshot for ARAnyM
         run: |
@@ -308,6 +314,8 @@ jobs:
             freemint-snapshot-boot-files.txt
             freemint-snapshot-stage.txt
             freemint-snapshot-guest-tools.txt
+            freemint-snapshot-mint-cnf-hooks.txt
+            freemint-snapshot-bash.txt
             aranym-freemint-snapshot.cfg
             aranym-snapshot-startup.log
             aranym-snapshot-startup-visible.log
