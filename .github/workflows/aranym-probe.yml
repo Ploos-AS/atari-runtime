@@ -116,7 +116,10 @@ jobs:
           sleep 30
           import -display :98 -window root aranym-snapshot.png
           identify aranym-snapshot.png | tee aranym-snapshot-framebuffer.txt
-          grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|panic|fatal|error' aranym-snapshot-startup.log | tee freemint-snapshot-bootstrap-trace.txt || true
+          cat aranym-snapshot-startup.log | tee aranym-snapshot-startup-visible.log
+          grep -Ei 'NF BOOTSTRAP|FreeMiNT|MiNT|parse_cnf|realloc_region|pid |panic|fatal|error' aranym-snapshot-startup.log | tee freemint-snapshot-bootstrap-trace.txt || true
+          grep -Fq 'NF BOOTSTRAP(' aranym-snapshot-startup.log
+          grep -Fq 'NF BOOTSTRAP_ARGS(MEM_PROT=YES DEBUG_LEVEL=1)' aranym-snapshot-startup.log
           colors="$(convert aranym-snapshot.png -format %c histogram:info:- | wc -l)"
           echo "aranym_snapshot_framebuffer_colors=$colors" | tee -a aranym-snapshot-framebuffer.txt
           test "$colors" -gt 1
@@ -297,6 +300,7 @@ jobs:
             freemint-snapshot-stage.txt
             aranym-freemint-snapshot.cfg
             aranym-snapshot-startup.log
+            aranym-snapshot-startup-visible.log
             aranym-snapshot-framebuffer.txt
             aranym-snapshot.png
             freemint-snapshot-bootstrap-trace.txt
