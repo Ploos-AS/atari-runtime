@@ -74,6 +74,9 @@ jobs:
             echo "snapshot_version=$(basename "$(dirname "$kernel")")"
           } | tee freemint-snapshot-stage.txt
           test -s "aranym-freemint-snapshot-C/$rel"
+          probe="$(find aranym-freemint-snapshot-C -type f -iname 'echo' -perm -111 -print -quit || true)"
+          printf 'snapshot_echo=%s\n' "$probe" | tee -a freemint-snapshot-stage.txt
+          find aranym-freemint-snapshot-C -type f \( -iname 'bash' -o -iname 'sh' -o -iname 'echo' -o -iname 'touch' \) -printf '%P\n' | sort | tee freemint-snapshot-guest-tools.txt
 
       - name: Configure current FreeMiNT snapshot for ARAnyM
         run: |
@@ -304,6 +307,7 @@ jobs:
             freemint-snapshot.sha256
             freemint-snapshot-boot-files.txt
             freemint-snapshot-stage.txt
+            freemint-snapshot-guest-tools.txt
             aranym-freemint-snapshot.cfg
             aranym-snapshot-startup.log
             aranym-snapshot-startup-visible.log
