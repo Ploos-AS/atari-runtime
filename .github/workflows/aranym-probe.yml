@@ -90,7 +90,9 @@ jobs:
           cat >> "$eth0_script" <<'EOF'
 
           # Ploos-AS M4.2 guest execution probe
-          echo 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > u:/c/PLOOSPASS.TXT
+          echo 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /tmp/PLOOSPASS.TXT
+          cp /tmp/PLOOSPASS.TXT /c/PLOOSPASS.TXT || true
+          cp /tmp/PLOOSPASS.TXT u:/c/PLOOSPASS.TXT || true
           EOF
           grep -n 'exec u:/bin/bash u:/bin/eth0-config.sh' "$cnf" | tee freemint-snapshot-probe-hook.txt
           tail -8 "$eth0_script" | tee freemint-snapshot-eth0-config-probe.txt
@@ -142,6 +144,7 @@ jobs:
           grep -Fq 'NF BOOTSTRAP_ARGS(MEM_PROT=YES DEBUG_LEVEL=1)' aranym-snapshot-startup.log
           grep -Eq 'pid +1 \(xaloader\): run_km\(xaaes\.km\) ok' aranym-snapshot-startup.log
           marker='aranym-freemint-snapshot-C/PLOOSPASS.TXT'
+          find aranym-freemint-snapshot-C -iname '*PLOOSPASS*' -print | tee freemint-snapshot-marker-locations.txt
           test -s "$marker"
           tr -d '\r' < "$marker" | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS'
           cp "$marker" freemint-snapshot-guest-marker.txt
