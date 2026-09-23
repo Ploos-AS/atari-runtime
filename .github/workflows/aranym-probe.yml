@@ -84,15 +84,16 @@ jobs:
           bashbin="$(find aranym-freemint-snapshot-C -type f -path '*/sys-root/bin/bash' -print -quit)"
           test -s "$bashbin"
           file "$bashbin" | tee freemint-snapshot-bash.txt
-          cat > aranym-freemint-snapshot-C/mint/ploos-pass.sh <<'EOF'
-          echo 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /c/PLOOSPASS.TXT
-          EOF
-          cat >> "$cnf" <<'EOF'
+          eth0_script="$(find aranym-freemint-snapshot-C -type f -path '*/sys-root/bin/eth0-config.sh' -print -quit)"
+          test -s "$eth0_script"
+          cp "$eth0_script" freemint-snapshot-eth0-config-original.sh
+          cat >> "$eth0_script" <<'EOF'
 
           # Ploos-AS M4.2 guest execution probe
-          exec u:/bin/bash c:/mint/ploos-pass.sh
+          echo 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /c/PLOOSPASS.TXT
           EOF
-          tail -8 "$cnf" | tee freemint-snapshot-probe-hook.txt
+          grep -n 'exec u:/bin/bash u:/bin/eth0-config.sh' "$cnf" | tee freemint-snapshot-probe-hook.txt
+          tail -8 "$eth0_script" | tee freemint-snapshot-eth0-config-probe.txt
 
       - name: Configure current FreeMiNT snapshot for ARAnyM
         run: |
@@ -331,6 +332,8 @@ jobs:
             freemint-snapshot-mint-cnf-hooks.txt
             freemint-snapshot-bash.txt
             freemint-snapshot-probe-hook.txt
+            freemint-snapshot-eth0-config-original.sh
+            freemint-snapshot-eth0-config-probe.txt
             freemint-snapshot-guest-marker.txt
             aranym-freemint-snapshot.cfg
             aranym-snapshot-startup.log
