@@ -90,7 +90,7 @@ jobs:
           cat >> "$cnf" <<'EOF'
 
           # Ploos-AS M4.2 guest execution probe
-          exec u:/bin/bash u:/c/mint/ploos-pass.sh
+          exec u:/bin/bash c:/mint/ploos-pass.sh
           EOF
           tail -8 "$cnf" | tee freemint-snapshot-probe-hook.txt
 
