@@ -86,7 +86,7 @@ jobs:
           cat > aranym-freemint-snapshot-C/mint/ploos-pass.sh <<'EOF'
           printf '%s\n' 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /c/PLOOSPASS.TXT
           EOF
-          printf '\n# Ploos-AS M4.2 guest execution probe\nexec u:/bin/bash u:/c/mint/ploos-pass.sh\n' >> "$cnf"
+          printf '\n# Ploos-AS M4.2 guest execution probe\nexec u:/bin/bash -c "printf '%s\\n' 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /c/PLOOSPASS.TXT"\n' >> "$cnf"
           tail -8 "$cnf" | tee freemint-snapshot-probe-hook.txt
 
       - name: Configure current FreeMiNT snapshot for ARAnyM
