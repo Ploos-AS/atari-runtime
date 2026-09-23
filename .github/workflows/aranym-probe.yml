@@ -143,11 +143,13 @@ jobs:
           grep -Fq 'NF BOOTSTRAP(' aranym-snapshot-startup.log
           grep -Fq 'NF BOOTSTRAP_ARGS(MEM_PROT=YES DEBUG_LEVEL=1)' aranym-snapshot-startup.log
           grep -Eq 'pid +1 \(xaloader\): run_km\(xaaes\.km\) ok' aranym-snapshot-startup.log
-          marker='aranym-freemint-snapshot-C/PLOOSPASS.TXT'
-          find aranym-freemint-snapshot-C -iname '*PLOOSPASS*' -print | tee freemint-snapshot-marker-locations.txt
+          find aranym-freemint-snapshot-C -iname '*PLOOSPASS*' -type f -print | tee freemint-snapshot-marker-locations.txt
+          marker="$(find aranym-freemint-snapshot-C -iname 'ploospass.txt' -type f -print -quit)"
+          test -n "$marker"
           test -s "$marker"
           tr -d '\r' < "$marker" | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS'
           cp "$marker" freemint-snapshot-guest-marker.txt
+          printf 'freemint_snapshot_guest_marker=PASS\nmarker=%s\n' "$marker" | tee freemint-snapshot-guest-marker-result.txt
           {
             echo 'freemint_snapshot_guest_execution=PASS'
             echo 'evidence=xaloader executed xaaes.km inside FreeMiNT guest'
@@ -338,6 +340,7 @@ jobs:
             freemint-snapshot-eth0-config-original.sh
             freemint-snapshot-eth0-config-probe.txt
             freemint-snapshot-guest-marker.txt
+            freemint-snapshot-guest-marker-result.txt
             aranym-freemint-snapshot.cfg
             aranym-snapshot-startup.log
             aranym-snapshot-startup-visible.log
