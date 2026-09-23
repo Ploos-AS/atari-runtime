@@ -90,7 +90,7 @@ jobs:
           cat >> "$eth0_script" <<'EOF'
 
           # Ploos-AS M4.2 guest execution probe
-          echo 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > /c/PLOOSPASS.TXT
+          echo 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS' > u:/c/PLOOSPASS.TXT
           EOF
           grep -n 'exec u:/bin/bash u:/bin/eth0-config.sh' "$cnf" | tee freemint-snapshot-probe-hook.txt
           tail -8 "$eth0_script" | tee freemint-snapshot-eth0-config-probe.txt
