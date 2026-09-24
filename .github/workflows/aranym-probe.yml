@@ -28,6 +28,16 @@ jobs:
           dpkg-query -W -f='aranym_version=${Version}\n' aranym | tee aranym-version.txt
           (aranym --help || true) > aranym-help.txt 2>&1
           test -s aranym-version.txt
+      - name: Discover ARAnyM CPU FPU MMU profile controls
+        run: |
+          set -eux
+          {
+            echo '=== aranym --help CPU/FPU/MMU matches ==='
+            grep -Ei 'cpu|fpu|mmu|680[2346]0|falcon|tt' aranym-help.txt || true
+            echo '=== packaged ARAnyM config/documentation matches ==='
+            grep -RniE 'CPU|FPU|MMU|680[2346]0|Falcon|Atari TT|Cookie_MCH' /usr/share/doc/aranym /etc 2>/dev/null | head -200 || true
+          } | tee aranym-profile-controls.txt
+          test -s aranym-profile-controls.txt
       - name: Provision EmuTOS for ARAnyM
         run: |
           set -eux
@@ -320,6 +330,8 @@ jobs:
           name: aranym-m4-1-baseline
           path: |
             aranym-version.txt
+            aranym-help.txt
+            aranym-profile-controls.txt
             aranym-package-files.txt
             aranym-manual.txt
             aranym-package-docs.txt
