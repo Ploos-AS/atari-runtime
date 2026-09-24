@@ -224,6 +224,37 @@ jobs:
           test -s aranym-snapshot-startup.log
           ! grep -Fq "No operating system found" aranym-snapshot-startup.log
 
+      - name: Probe FreeMiNT snapshot with full-MMU ARAnyM
+        run: |
+          set -eux
+          rm -f aranym-freemint-snapshot-C/ploospass.txt
+          find aranym-freemint-snapshot-C -iname 'ploospass.txt' -type f -delete
+          Xvfb :97 -screen 0 1024x768x24 > aranym-mmu-xvfb.log 2>&1 &
+          xvfb_pid=$!
+          export DISPLAY=:97
+          sleep 1
+          aranym-upstream/src/aranym -N -e -c "$GITHUB_WORKSPACE/aranym-freemint-snapshot.cfg" > aranym-mmu-startup.log 2>&1 &
+          aranym_pid=$!
+          sleep 30
+          grep -Fq 'NF BOOTSTRAP(' aranym-mmu-startup.log
+          grep -Fq 'NF BOOTSTRAP_ARGS(MEM_PROT=YES DEBUG_LEVEL=1)' aranym-mmu-startup.log
+          grep -Eq 'pid +1 \(xaloader\): run_km\(xaaes\.km\) ok' aranym-mmu-startup.log
+          marker="$(find aranym-freemint-snapshot-C -iname 'ploospass.txt' -type f -print -quit)"
+          test -n "$marker"
+          tr -d '\r' < "$marker" | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT ARAnyM execution PASS'
+          ! grep -Fq 'PMMU is requested but not present' aranym-mmu-startup.log
+          {
+            echo 'profile=falcon-040-mmu'
+            echo 'status=PASS'
+            echo 'full_mmu=PASS'
+            echo 'bootstrap=PASS'
+            echo 'xaaes=PASS'
+            echo 'guest_marker=PASS'
+          } | tee aranym-m4-3-falcon-040-mmu-result.txt
+          kill "$aranym_pid" 2>/dev/null || true
+          wait "$aranym_pid" 2>/dev/null || true
+          kill "$xvfb_pid" 2>/dev/null || true
+
       - name: Discover current FreeMiNT release
         run: |
           set -eux
@@ -386,6 +417,8 @@ jobs:
             aranym-m4-3-falcon-040.txt
             aranym-mmu-version.txt
             aranym-m4-3-falcon-040-mmu.txt
+            aranym-m4-3-falcon-040-mmu-result.txt
+            aranym-mmu-startup.log
             aranym-package-files.txt
             aranym-manual.txt
             aranym-package-docs.txt
