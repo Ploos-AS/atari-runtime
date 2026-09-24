@@ -20,7 +20,7 @@ jobs:
       - name: Install ARAnyM
         run: |
           sudo apt-get update
-          sudo apt-get install -y aranym xvfb imagemagick x11-utils
+          sudo apt-get install -y aranym xvfb imagemagick x11-utils build-essential autoconf automake libtool libsdl2-dev libfreetype6-dev libjpeg-dev libpng-dev zlib1g-dev
       - name: Record ARAnyM baseline
         run: |
           set -eux
@@ -148,6 +148,26 @@ jobs:
           RedirConsole = No
           EOF
           test -s aranym-freemint-snapshot.cfg
+
+      - name: Build ARAnyM full-MMU variant
+        run: |
+          set -eux
+          git clone --depth 1 https://github.com/aranym/aranym.git aranym-upstream
+          cd aranym-upstream
+          ./autogen.sh
+          ./configure --enable-fullmmu --disable-jit-compiler
+          make -j2
+          test -x src/aranym
+          ./src/aranym --version | tee ../aranym-mmu-version.txt
+          {
+            echo 'milestone=M4.3'
+            echo 'profile=falcon-040-mmu'
+            echo 'source=https://github.com/aranym/aranym.git'
+            echo 'configure=--enable-fullmmu --disable-jit-compiler'
+            echo 'full_mmu=enabled'
+            echo 'jit=disabled'
+            echo 'status=BUILD_PASS'
+          } | tee ../aranym-m4-3-falcon-040-mmu.txt
 
       - name: Record M4.3 Falcon-040 profile
         run: |
@@ -364,6 +384,8 @@ jobs:
             aranym-profile-controls.txt
             aranym-profile-schema.txt
             aranym-m4-3-falcon-040.txt
+            aranym-mmu-version.txt
+            aranym-m4-3-falcon-040-mmu.txt
             aranym-package-files.txt
             aranym-manual.txt
             aranym-package-docs.txt
