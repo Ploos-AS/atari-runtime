@@ -149,6 +149,23 @@ jobs:
           EOF
           test -s aranym-freemint-snapshot.cfg
 
+      - name: Record M4.3 Falcon-040 profile
+        run: |
+          set -eux
+          cat > aranym-m4-3-falcon-040.txt <<'EOF'
+          milestone=M4.3
+          profile=falcon-040
+          emulator=ARAnyM
+          cpu=MC68040-compatible
+          fpu=MC68882-compatible
+          mmu=disabled-in-standard-build
+          guest=FreeMiNT
+          qualification_gate=M4.2-guest-marker+xaloader-xaaes
+          machine_fidelity=ARAnyM-virtual-machine-not-Falcon-hardware-emulation
+          EOF
+          grep -Fxq 'profile=falcon-040' aranym-m4-3-falcon-040.txt
+          grep -Fxq 'cpu=MC68040-compatible' aranym-m4-3-falcon-040.txt
+
       - name: Probe current FreeMiNT snapshot boot
         run: |
           set -eux
@@ -346,6 +363,7 @@ jobs:
             aranym-help.txt
             aranym-profile-controls.txt
             aranym-profile-schema.txt
+            aranym-m4-3-falcon-040.txt
             aranym-package-files.txt
             aranym-manual.txt
             aranym-package-docs.txt
