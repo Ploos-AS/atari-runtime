@@ -65,5 +65,6 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - `falcon-040-mmu` qualified from a dedicated upstream ARAnyM full-MMU build: full MMU, FreeMiNT bootstrap, XaAES and guest marker PASS
 - standard Ubuntu ARAnyM package remains the non-MMU `falcon-040` baseline
 - do not label ARAnyM as a TT emulator; TT qualification requires an emulator with an actual TT machine model
+- Hatari `tt` machine baseline qualified with EmuTOS boot and canonical `MINIMAL.PRG` guest execution; next add FreeMiNT TT guest qualification
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate
