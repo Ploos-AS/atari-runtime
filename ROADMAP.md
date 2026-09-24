@@ -49,11 +49,13 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - ARAnyM + EmuTOS headless boot with framebuffer evidence qualified in GitHub Actions run #5
 - ARAnyM extended FreeMiNT/TT/Falcon-oriented profiles
 
-### M4.2 — FreeMiNT guest qualification — NEXT
-- provision a redistributable FreeMiNT guest environment
-- boot FreeMiNT under ARAnyM in CI
-- require guest-side execution evidence, not emulator liveness alone
-- retain logs and machine-readable qualification artifacts
+### M4.2 — FreeMiNT guest qualification — PASS
+- provisioned the current redistributable upstream FreeMiNT ARAnyM snapshot
+- FreeMiNT boots under ARAnyM + EmuTOS in CI
+- guest-side execution is required: pid 1 `xaloader` executes `xaaes.km`
+- upstream Bash startup hook creates the exact Ploos-AS PASS marker inside the FreeMiNT guest
+- case-insensitive guest marker content is verified and retained as machine-readable evidence
+- GitHub Actions ARAnyM integration probe run #55 PASS
 - TT/Falcon profiles where supported
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate
