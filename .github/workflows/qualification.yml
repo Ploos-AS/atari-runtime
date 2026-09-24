@@ -87,6 +87,16 @@ jobs:
           grep -F 'Ploos-AS atari-runtime minimal GEMDOS execution PASS' artifacts/MINPASS.TXT
           printf 'Canonical GEMDOS execution probe %s: PASS\n' "${{ matrix.profile }}"
 
+      - name: Discover FreeMiNT TT snapshot payload
+        if: matrix.profile == 'tt'
+        run: |
+          set -eux
+          curl --fail --location --retry 3 https://atari.joska.no/snapshots/freemint/bootable/freemint-latest-tt.zip -o /tmp/freemint-tt.zip ||             curl --fail --location --retry 3 https://atari.joska.no/snapshots/freemint/bootable/freemint-latest.zip -o /tmp/freemint-tt.zip
+          unzip -l /tmp/freemint-tt.zip | tee artifacts/freemint-tt-snapshot-inventory.txt
+          unzip -q /tmp/freemint-tt.zip -d artifacts/freemint-tt
+          find artifacts/freemint-tt -type f \( -iname 'mint*.prg' -o -iname 'mint.cnf' -o -iname 'xaaes.km' \) -print | tee artifacts/freemint-tt-candidates.txt
+          test -s artifacts/freemint-tt-candidates.txt
+
       - name: Verify Atari-side GEMDOS execution evidence
         run: |
           test -s artifacts/MINPASS.TXT
