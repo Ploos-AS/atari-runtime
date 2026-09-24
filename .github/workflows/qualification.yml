@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        profile: [st, ste]
+        profile: [st, ste, tt]
     steps:
       - uses: actions/checkout@v4
       - name: Build atari-runtime image
@@ -53,7 +53,7 @@ jobs:
           rm -f artifacts/xvfb-${{ matrix.profile }}.log artifacts/boot-hatari-${{ matrix.profile }}.log
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'set -eu; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 8s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 || rc=$?; rc=${rc:-0}; cp /tmp/xvfb.log /runtime/artifacts/xvfb-${{ matrix.profile }}.log; cp /tmp/hatari.log /runtime/artifacts/boot-hatari-${{ matrix.profile }}.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; case "$rc" in 0|124|137) exit 0 ;; *) exit "$rc" ;; esac'
+            sh -c 'set -eu; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 8s hatari --machine "${{ matrix.profile }}" --memsize ${{ matrix.profile == 'tt' && '4' || '1' }} --tos /runtime/roms/emutos.img >/tmp/hatari.log 2>&1 || rc=$?; rc=${rc:-0}; cp /tmp/xvfb.log /runtime/artifacts/xvfb-${{ matrix.profile }}.log; cp /tmp/hatari.log /runtime/artifacts/boot-hatari-${{ matrix.profile }}.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; case "$rc" in 0|124|137) exit 0 ;; *) exit "$rc" ;; esac'
           cat artifacts/xvfb-${{ matrix.profile }}.log || true
           cat artifacts/boot-hatari-${{ matrix.profile }}.log || true
           test -e artifacts/boot-hatari-${{ matrix.profile }}.log
