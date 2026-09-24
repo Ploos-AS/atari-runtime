@@ -38,6 +38,19 @@ jobs:
             grep -RniE 'CPU|FPU|MMU|680[2346]0|Falcon|Atari TT|Cookie_MCH' /usr/share/doc/aranym /etc 2>/dev/null | head -200 || true
           } | tee aranym-profile-controls.txt
           test -s aranym-profile-controls.txt
+          {
+            echo '=== installed ARAnyM binaries ==='
+            command -v aranym || true
+            command -v aranym-jit || true
+            command -v aranym-mmu || true
+            echo '=== packaged reference config ==='
+            if test -f /usr/share/doc/aranym/config; then
+              cat /usr/share/doc/aranym/config
+            else
+              echo 'reference_config=missing'
+            fi
+          } | tee aranym-profile-schema.txt
+          grep -Eq 'aranym(-jit|-mmu)?' aranym-profile-schema.txt
       - name: Provision EmuTOS for ARAnyM
         run: |
           set -eux
@@ -332,6 +345,7 @@ jobs:
             aranym-version.txt
             aranym-help.txt
             aranym-profile-controls.txt
+            aranym-profile-schema.txt
             aranym-package-files.txt
             aranym-manual.txt
             aranym-package-docs.txt
