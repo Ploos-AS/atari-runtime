@@ -91,7 +91,7 @@ jobs:
         if: matrix.profile == 'tt'
         run: |
           set -eux
-          curl --fail --location --retry 3 https://atari.joska.no/snapshots/freemint/bootable/freemint-latest-tt.zip -o /tmp/freemint-tt.zip ||             curl --fail --location --retry 3 https://atari.joska.no/snapshots/freemint/bootable/freemint-latest.zip -o /tmp/freemint-tt.zip
+          curl --fail --location --retry 3 https://atari.joska.no/snapshots/freemint/bootable/freemint-latest-aranym.zip -o /tmp/freemint-tt.zip
           unzip -l /tmp/freemint-tt.zip | tee artifacts/freemint-tt-snapshot-inventory.txt
           unzip -q /tmp/freemint-tt.zip -d artifacts/freemint-tt
           find artifacts/freemint-tt -type f \( -iname 'mint*.prg' -o -iname 'mint.cnf' -o -iname 'xaaes.km' \) -print | tee artifacts/freemint-tt-candidates.txt
