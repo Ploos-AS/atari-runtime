@@ -62,7 +62,8 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - `falcon-040` profile qualified with standard ARAnyM build in GitHub Actions run #61
 - `falcon-040` requires the same FreeMiNT guest marker and XaAES execution gates as M4.2
 - profile-specific machine-readable evidence records the ARAnyM virtual-machine fidelity boundary
-- standard Ubuntu ARAnyM package does not provide a separate MMU binary; qualify `falcon-040-mmu` from a dedicated MMU build next
+- `falcon-040-mmu` qualified from a dedicated upstream ARAnyM full-MMU build: full MMU, FreeMiNT bootstrap, XaAES and guest marker PASS
+- standard Ubuntu ARAnyM package remains the non-MMU `falcon-040` baseline
 - do not label ARAnyM as a TT emulator; TT qualification requires an emulator with an actual TT machine model
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate
