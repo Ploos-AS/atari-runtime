@@ -21,9 +21,12 @@ Baseline target: Hatari + EmuTOS. Cross-emulator target: the same artifact also 
 - **M2 — TOS runtime qualification — PASS**
 - **M3.1 — Reusable consumer qualification — PASS**
 - **M3.2 — Steem SSE cross-emulator qualification — PASS**
-- **M4.1 — ARAnyM extended runtime — NEXT**
+- **M4.1 — ARAnyM + EmuTOS boot baseline — PASS**
+- **M4.2 — FreeMiNT guest qualification — PASS**
 
 M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. M3.1 reusable consumer qualification was independently self-tested on both profiles in reusable qualification self-test run #1. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS. M3.2 was qualified in Steem SSE + EmuTOS in GitHub Actions run #120: the same canonical `MINIMAL.PRG` executed from `A:\\AUTO\\PROBE.PRG`, created `MINPASS.TXT`, and the exact marker was verified after normalizing GEMDOS CRLF line endings.
+
+M4.1 qualified headless ARAnyM + EmuTOS boot with framebuffer evidence. M4.2 was qualified in ARAnyM integration probe run #55 using the current upstream FreeMiNT ARAnyM snapshot. CI requires FreeMiNT guest process evidence (`xaloader` executing `xaaes.km`) and an exact PASS marker created from the guest through the snapshot's upstream Bash startup hook; emulator liveness alone is insufficient.
 
 ## M2 qualification
 
