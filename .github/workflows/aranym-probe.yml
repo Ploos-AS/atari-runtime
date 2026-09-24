@@ -20,7 +20,7 @@ jobs:
       - name: Install ARAnyM
         run: |
           sudo apt-get update
-          sudo apt-get install -y aranym xvfb imagemagick x11-utils build-essential autoconf automake libtool libsdl2-dev libfreetype6-dev libjpeg-dev libpng-dev zlib1g-dev
+          sudo apt-get install -y aranym xvfb imagemagick x11-utils build-essential autoconf automake libtool libsdl2-dev libfreetype6-dev libjpeg-dev libpng-dev zlib1g-dev libglu1-mesa-dev
       - name: Record ARAnyM baseline
         run: |
           set -eux
