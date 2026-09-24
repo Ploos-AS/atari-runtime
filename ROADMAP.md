@@ -57,5 +57,11 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - case-insensitive guest marker content is verified and retained as machine-readable evidence
 - GitHub Actions ARAnyM integration probe run #55 PASS
 - TT/Falcon profiles where supported
+
+### M4.3 — TT/Falcon-oriented FreeMiNT profiles — NEXT
+- derive ARAnyM CPU/FPU/MMU settings from supported emulator configuration
+- add separate TT-oriented and Falcon-oriented qualification profiles
+- require the same FreeMiNT guest marker and XaAES execution gates as M4.2
+- record profile-specific machine-readable evidence
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate
