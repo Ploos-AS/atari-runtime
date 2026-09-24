@@ -71,7 +71,7 @@ jobs:
           set +e
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 45s hatari --machine "${{ matrix.profile }}" --memsize 1 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --auto MINIMAL.PRG --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log --log-level debug --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log --run-vbls 1500 >/runtime/artifacts/hatari-stdout-${{ matrix.profile }}.log 2>/runtime/artifacts/hatari-stderr-${{ matrix.profile }}.log; rc=$?; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
+            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=2s 45s hatari --machine "${{ matrix.profile }}" --memsize ${{ matrix.profile == 'tt' && '4' || '1' }} --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts --gemdos-drive C --auto MINIMAL.PRG --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-boot-trace-${{ matrix.profile }}.log --log-level debug --log-file /runtime/artifacts/hatari-boot-debug-${{ matrix.profile }}.log --run-vbls 1500 >/runtime/artifacts/hatari-stdout-${{ matrix.profile }}.log 2>/runtime/artifacts/hatari-stderr-${{ matrix.profile }}.log; rc=$?; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
           rc=$?
           set -e
 
@@ -96,6 +96,28 @@ jobs:
           unzip -q /tmp/freemint-tt.zip -d artifacts/freemint-tt
           find artifacts/freemint-tt -type f \( -iname 'mint*.prg' -o -iname 'mint.cnf' -o -iname 'xaaes.km' \) -print | tee artifacts/freemint-tt-candidates.txt
           test -s artifacts/freemint-tt-candidates.txt
+
+      - name: Build FreeMiNT 68030 kernel for TT
+        if: matrix.profile == 'tt'
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y make gcc-m68k-linux-gnu binutils-m68k-linux-gnu
+          git clone --depth 1 https://github.com/freemint/freemint.git /tmp/freemint-src
+          cd /tmp/freemint-src/sys
+          make 030 CROSS_PREFIX=m68k-linux-gnu-
+          test -s .compile_030/mint030.prg
+          cp .compile_030/mint030.prg "$GITHUB_WORKSPACE/artifacts/mint030.prg"
+          file "$GITHUB_WORKSPACE/artifacts/mint030.prg"
+          sha256sum "$GITHUB_WORKSPACE/artifacts/mint030.prg"
+          {
+            echo 'milestone=M4.3'
+            echo 'profile=tt-freemint'
+            echo 'emulator=Hatari'
+            echo 'machine=tt'
+            echo 'kernel=mint030.prg'
+            echo 'kernel_build=PASS'
+          } | tee "$GITHUB_WORKSPACE/artifacts/hatari-m4-3-tt-freemint-build.txt"
 
       - name: Verify Atari-side GEMDOS execution evidence
         run: |
