@@ -102,10 +102,15 @@ jobs:
         run: |
           set -eux
           sudo apt-get update
-          sudo apt-get install -y make gcc-m68k-linux-gnu binutils-m68k-linux-gnu
+          sudo apt-get install -y make bzip2 wget
           git clone --depth 1 https://github.com/freemint/freemint.git /tmp/freemint-src
-          cd /tmp/freemint-src/sys
-          make 030 CROSS_PREFIX=m68k-linux-gnu-
+          cd /tmp/freemint-src
+          export CROSS_TOOL=m68k-atari-mint
+          export PATH="/usr/${CROSS_TOOL}/bin:$PATH"
+          SYSROOT_DIR=/ ./.scripts/install-freemint.sh binutils gcc mintbin
+          m68k-atari-mint-gcc --version
+          cd sys
+          make 030
           test -s .compile_030/mint030.prg
           cp .compile_030/mint030.prg "$GITHUB_WORKSPACE/artifacts/mint030.prg"
           file "$GITHUB_WORKSPACE/artifacts/mint030.prg"
