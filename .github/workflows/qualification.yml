@@ -102,7 +102,7 @@ jobs:
         run: |
           set -eux
           sudo apt-get update
-          sudo apt-get install -y make bzip2 wget
+          sudo apt-get install -y make bzip2 wget build-essential libc6-dev
           git clone --depth 1 https://github.com/freemint/freemint.git /tmp/freemint-src
           cd /tmp/freemint-src
           export CROSS_TOOL=m68k-atari-mint
