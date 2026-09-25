@@ -107,8 +107,11 @@ jobs:
           cd /tmp/freemint-src
           export CROSS_TOOL=m68k-atari-mint
           export PATH="/usr/${CROSS_TOOL}/bin:$PATH"
-          SYSROOT_DIR=/usr/${CROSS_TOOL}/sys-root ./.scripts/install-freemint.sh binutils gcc mintbin
-          export PATH="/usr/${CROSS_TOOL}/bin:$PATH"
+          SYSROOT_DIR=/tmp/mint-toolchain ./.scripts/install-freemint.sh binutils gcc mintbin
+          toolbin="$(find /tmp/mint-toolchain -type f -name m68k-atari-mint-gcc -printf '%h\n' | head -n1)"
+          test -n "$toolbin"
+          export PATH="$toolbin:$PATH"
+          echo "MiNT toolchain bin: $toolbin"
           m68k-atari-mint-gcc --version
           cd sys
           make 030
