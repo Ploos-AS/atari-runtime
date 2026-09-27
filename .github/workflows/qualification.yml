@@ -141,52 +141,71 @@ jobs:
         if: matrix.profile == 'tt'
         run: |
           set -eux
-          root="$(find artifacts/freemint-tt -type d -name drive_c -print -quit)"
-          test -n "$root"
-          rm -rf artifacts/tt-freemint-C
-          cp -a "$root" artifacts/tt-freemint-C
-          mkdir -p artifacts/tt-freemint-C/AUTO
-          cp artifacts/mint030.prg artifacts/tt-freemint-C/AUTO/MINT030.PRG
-          version_dir="$(find artifacts/tt-freemint-C/mint -mindepth 1 -maxdepth 1 -type d -name '1-19-*' -print -quit)"
-          test -n "$version_dir"
-          rm -rf artifacts/tt-freemint-C/mint/1-19-cur
-          cp -a "$version_dir" artifacts/tt-freemint-C/mint/1-19-cur
-          cnf="artifacts/tt-freemint-C/mint/1-19-cur/mint.cnf"
-          test -s "$cnf"
-          eth0_script="$(find artifacts/tt-freemint-C -type f -path '*/sys-root/bin/eth0-config.sh' -print -quit)"
-          test -s "$eth0_script"
-          cat >> "$eth0_script" <<'EOF'
+          # Use a real FAT12 Atari disk image.  Once FreeMiNT takes over,
+          # Hatari GEMDOS host-directory emulation is no longer a valid
+          # filesystem qualification path for the kernel.
+          rm -f artifacts/tt-freemint.st
+          dd if=/dev/zero of=artifacts/tt-freemint.st bs=1024 count=1440
+          mkfs.fat -F 12 -n MINTTT artifacts/tt-freemint.st
+          mmd -i artifacts/tt-freemint.st ::/AUTO
+          mmd -i artifacts/tt-freemint.st ::/MINT
+          mmd -i artifacts/tt-freemint.st ::/MINT/1-19-CUR
+          mcopy -i artifacts/tt-freemint.st artifacts/mint030.prg ::/AUTO/MINT030.PRG
 
-          # Ploos-AS M4.3 Hatari TT guest execution probe
-          echo 'Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS' > /tmp/PLOOSPASS.TXT
-          cp /tmp/PLOOSPASS.TXT /c/PLOOSPASS.TXT || true
-          cp /tmp/PLOOSPASS.TXT u:/c/PLOOSPASS.TXT || true
+          cat > /tmp/mint.cnf <<'EOF'
+          # Ploos-AS atari-runtime M4.3 minimal TT FreeMiNT qualification.
+          # The EXEC line is intentionally guest-side and runs only after
+          # the FreeMiNT kernel has mounted its own FAT filesystem.
+          exec a:/PLOOSPRG.TOS
           EOF
-          grep -Ein 'exec|init|shell|bash|xaaes|xaloader' "$cnf" | tee artifacts/hatari-tt-mint-cnf-hooks.txt || true
-          rm -f artifacts/tt-freemint-C/PLOOSPASS.TXT artifacts/tt-freemint-C/ploospass.txt
+
+          cat > /tmp/ploosprobe.c <<'EOF'
+          #include <stdio.h>
+          int main(void) {
+              FILE *f = fopen("A:\\PLOOSPASS.TXT", "wb");
+              if (!f) return 20;
+              fputs("Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n", f);
+              if (fclose(f) != 0) return 21;
+              return 0;
+          }
+          EOF
+
+          compiler="$(find /tmp/mint-toolchain \( -type f -o -type l \) -name m68k-atari-mint-gcc -print -quit)"
+          test -n "$compiler"
+          "$compiler" -Os -s -o /tmp/PLOOSPRG.TOS /tmp/ploosprobe.c
+          test -s /tmp/PLOOSPRG.TOS
+          mcopy -i artifacts/tt-freemint.st /tmp/mint.cnf ::/MINT/1-19-CUR/MINT.CNF
+          mcopy -i artifacts/tt-freemint.st /tmp/PLOOSPRG.TOS ::/PLOOSPRG.TOS
+          mdir -i artifacts/tt-freemint.st -/ :: | tee artifacts/hatari-m4-3-tt-freemint-disk.txt
+
           set +e
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=3s 90s hatari --machine tt --memsize 4 --tos /runtime/roms/emutos.img --harddrive /runtime/artifacts/tt-freemint-C --gemdos-drive C --auto C:\\AUTO\\MINT030.PRG --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-m4-3-tt-freemint-trace.log --log-level debug --log-file /runtime/artifacts/hatari-m4-3-tt-freemint-debug.log >/runtime/artifacts/hatari-m4-3-tt-freemint-stdout.log 2>/runtime/artifacts/hatari-m4-3-tt-freemint-stderr.log; rc=$?; cp /tmp/xvfb.log /runtime/artifacts/hatari-m4-3-tt-freemint-xvfb.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
+            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=3s 90s hatari --machine tt --memsize 4 --tos /runtime/roms/emutos.img --disk-a /runtime/artifacts/tt-freemint.st --fastfdc yes --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-m4-3-tt-freemint-trace.log --log-level debug --log-file /runtime/artifacts/hatari-m4-3-tt-freemint-debug.log >/runtime/artifacts/hatari-m4-3-tt-freemint-stdout.log 2>/runtime/artifacts/hatari-m4-3-tt-freemint-stderr.log; rc=$?; cp /tmp/xvfb.log /runtime/artifacts/hatari-m4-3-tt-freemint-xvfb.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
           rc=$?
           set -e
           cat artifacts/hatari-m4-3-tt-freemint-stderr.log || true
-          grep -Ei 'FreeMiNT|MiNT|xaaes|xaloader|panic|fatal|error' artifacts/hatari-m4-3-tt-freemint-{stdout,stderr,debug,trace}.log 2>/dev/null | tail -n 400 | tee artifacts/hatari-m4-3-tt-freemint-visible.log || true
-          marker="$(find artifacts/tt-freemint-C -iname 'ploospass.txt' -type f -print -quit)"
-          test -n "$marker"
-          test -s "$marker"
-          tr -d '\r' < "$marker" | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS'
+          grep -Ei 'FreeMiNT|MiNT|PLOOS|panic|fatal|error' artifacts/hatari-m4-3-tt-freemint-{stdout,stderr,debug,trace}.log 2>/dev/null | tail -n 400 | tee artifacts/hatari-m4-3-tt-freemint-visible.log || true
+
+          rm -f /tmp/PLOOSPASS.TXT
+          mcopy -i artifacts/tt-freemint.st ::/PLOOSPASS.TXT /tmp/PLOOSPASS.TXT
+          test -s /tmp/PLOOSPASS.TXT
+          tr -d '\r' < /tmp/PLOOSPASS.TXT | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS'
+          cp /tmp/PLOOSPASS.TXT artifacts/hatari-m4-3-tt-freemint-PLOOSPASS.TXT
+          grep -Fq 'This is FreeMiNT v1.19.0-ALPHA' artifacts/hatari-m4-3-tt-freemint-stdout.log
           {
             echo 'milestone=M4.3'
             echo 'profile=tt-freemint'
             echo 'emulator=Hatari'
             echo 'machine=tt'
             echo 'cpu=68030'
+            echo 'boot_media=FAT12-floppy'
             echo 'kernel=mint030.prg'
             echo 'kernel_build=PASS'
+            echo 'kernel_boot=PASS'
+            echo 'guest_exec=PASS'
             echo 'guest_marker=PASS'
             echo "hatari_exit=$rc"
-            echo "marker=$marker"
           } | tee artifacts/hatari-m4-3-tt-freemint-result.txt
 
       - name: Verify Atari-side GEMDOS execution evidence
