@@ -159,23 +159,67 @@ jobs:
           exec a:/PLOOSPRG.TOS
           EOF
 
-          cat > /tmp/ploosprobe.c <<'EOF'
-          #include <stdio.h>
-          int main(void) {
-              FILE *f = fopen("A:\\PLOOSPASS.TXT", "wb");
-              if (!f) return 20;
-              fputs("Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n", f);
-              if (fclose(f) != 0) return 21;
-              return 0;
-          }
+          cat > /tmp/ploosprobe.S <<'EOF'
+          .text
+          .globl _start
+          _start:
+              /* GEMDOS Fcreate("A:\\PLOOSPASS.TXT", 0) */
+              clr.w   -(sp)
+              pea     filename
+              move.w  #0x3c,-(sp)
+              trap    #1
+              addq.l  #8,sp
+              tst.l   d0
+              bmi.s   fail
+              move.w  d0,d2
+
+              /* GEMDOS Fwrite(handle, length, marker) */
+              pea     marker
+              move.l  #marker_end-marker,-(sp)
+              move.w  d2,-(sp)
+              move.w  #0x40,-(sp)
+              trap    #1
+              lea     12(sp),sp
+              tst.l   d0
+              bmi.s   close_fail
+
+              /* GEMDOS Fclose(handle) */
+              move.w  d2,-(sp)
+              move.w  #0x3e,-(sp)
+              trap    #1
+              addq.l  #4,sp
+
+              /* GEMDOS Pterm0 */
+              clr.w   -(sp)
+              trap    #1
+
+          close_fail:
+              move.w  d2,-(sp)
+              move.w  #0x3e,-(sp)
+              trap    #1
+              addq.l  #4,sp
+          fail:
+              move.w  #20,-(sp)
+              move.w  #0x4c,-(sp)
+              trap    #1
+
+          .data
+          filename:
+              .asciz  "A:\\PLOOSPASS.TXT"
+          marker:
+              .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n"
+          marker_end:
           EOF
 
-          compiler="$(find /tmp/mint-toolchain \( -type f -o -type l \) -name m68k-atari-mint-gcc -print -quit)"
-          test -n "$compiler"
-          mint_prefix="$(cd "$(dirname "$compiler")/.." && pwd)"
-          test -s "$mint_prefix/include/stdio.h"
-          "$compiler" -Os -s -isystem "$mint_prefix/include" -L"$mint_prefix/lib" -o /tmp/PLOOSPRG.TOS /tmp/ploosprobe.c
+          assembler="$(find /tmp/mint-toolchain \( -type f -o -type l \) -name m68k-atari-mint-as -print -quit)"
+          linker="$(find /tmp/mint-toolchain \( -type f -o -type l \) -name m68k-atari-mint-ld -print -quit)"
+          test -n "$assembler"
+          test -n "$linker"
+          "$assembler" -m68030 -o /tmp/ploosprobe.o /tmp/ploosprobe.S
+          "$linker" -s -e _start -o /tmp/PLOOSPRG.TOS /tmp/ploosprobe.o
           test -s /tmp/PLOOSPRG.TOS
+          file /tmp/PLOOSPRG.TOS
+
           mcopy -i artifacts/tt-freemint.st /tmp/mint.cnf ::/MINT/1-19-CUR/MINT.CNF
           mcopy -i artifacts/tt-freemint.st /tmp/PLOOSPRG.TOS ::/PLOOSPRG.TOS
           mdir -i artifacts/tt-freemint.st -/ :: | tee artifacts/hatari-m4-3-tt-freemint-disk.txt
