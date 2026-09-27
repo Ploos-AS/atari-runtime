@@ -172,7 +172,9 @@ jobs:
 
           compiler="$(find /tmp/mint-toolchain \( -type f -o -type l \) -name m68k-atari-mint-gcc -print -quit)"
           test -n "$compiler"
-          "$compiler" -Os -s -o /tmp/PLOOSPRG.TOS /tmp/ploosprobe.c
+          mint_prefix="$(cd "$(dirname "$compiler")/.." && pwd)"
+          test -s "$mint_prefix/include/stdio.h"
+          "$compiler" -Os -s -isystem "$mint_prefix/include" -L"$mint_prefix/lib" -o /tmp/PLOOSPRG.TOS /tmp/ploosprobe.c
           test -s /tmp/PLOOSPRG.TOS
           mcopy -i artifacts/tt-freemint.st /tmp/mint.cnf ::/MINT/1-19-CUR/MINT.CNF
           mcopy -i artifacts/tt-freemint.st /tmp/PLOOSPRG.TOS ::/PLOOSPRG.TOS
