@@ -156,8 +156,7 @@ jobs:
           # Ploos-AS atari-runtime M4.3 minimal TT FreeMiNT qualification.
           # The EXEC line is intentionally guest-side and runs only after
           # the FreeMiNT kernel has mounted its own FAT filesystem.
-          # Keep the default FreeMiNT startup path; sh.tos below is our
-          # libc-free guest execution probe.
+          exec a:/PLOOSPRG.TOS
           EOF
 
           cat > /tmp/ploosprobe.S <<'EOF'
@@ -222,6 +221,8 @@ jobs:
           file /tmp/PLOOSPRG.TOS
 
           mcopy -i artifacts/tt-freemint.st /tmp/mint.cnf ::/MINT/1-19-CUR/MINT.CNF
+          mcopy -i artifacts/tt-freemint.st /tmp/PLOOSPRG.TOS ::/PLOOSPRG.TOS
+          # Keep the libc-free probe as the FreeMiNT shell startup binary.
           mcopy -i artifacts/tt-freemint.st /tmp/PLOOSPRG.TOS ::/MINT/1-19-CUR/sh.tos
           mdir -i artifacts/tt-freemint.st -/ :: | tee artifacts/hatari-m4-3-tt-freemint-disk.txt
 
