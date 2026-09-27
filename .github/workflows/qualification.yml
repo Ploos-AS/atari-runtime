@@ -116,8 +116,13 @@ jobs:
           fi
           toolbin="$(dirname "$compiler")"
           export PATH="$toolbin:$PATH"
+          mint_include="$(find /tmp/mint-toolchain -type f -path '*/include/mint/mintbind.h' -printf '%h\n' | sed 's#/mint$##' | head -n1)"
+          test -n "$mint_include"
+          export C_INCLUDE_PATH="$mint_include${C_INCLUDE_PATH:+:$C_INCLUDE_PATH}"
           echo "MiNT toolchain compiler: $compiler"
+          echo "MiNT include root: $mint_include"
           "$compiler" --version
+          test -s "$mint_include/mint/mintbind.h"
           cd sys
           make 030
           test -s .compile_030/mint030.prg
