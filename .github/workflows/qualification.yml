@@ -176,8 +176,8 @@ jobs:
               move.w  d0,d2
 
               /* GEMDOS Fwrite(handle, length, marker) */
-              pea     marker
               move.l  #marker_end-marker,-(sp)
+              pea     marker
               move.w  d2,-(sp)
               move.w  #0x40,-(sp)
               trap    #1
