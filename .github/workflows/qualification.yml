@@ -165,7 +165,7 @@ jobs:
           .text
           .globl _start
           _start:
-              /* GEMDOS Fcreate("A:\\PLOOSPASS.TXT", 0) */
+              /* GEMDOS Fcreate("u:/a/PLOOSPASS.TXT", 0) */
               clr.w   -(sp)
               pea     filename
               move.w  #0x3c,-(sp)
@@ -207,7 +207,7 @@ jobs:
 
           .data
           filename:
-              .asciz  "A:\\PLOOSPASS.TXT"
+              .asciz  "u:/a/PLOOSPASS.TXT"
           marker:
               .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n"
           marker_end:
