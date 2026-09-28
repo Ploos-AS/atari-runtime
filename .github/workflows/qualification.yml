@@ -156,7 +156,9 @@ jobs:
           # Ploos-AS atari-runtime M4.3 minimal TT FreeMiNT qualification.
           # The EXEC line is intentionally guest-side and runs only after
           # the FreeMiNT kernel has mounted its own FAT filesystem.
+          echo PLOOS-M4.3-BEFORE-EXEC
           exec u:/a/PLOOSPRG.TOS --ploos-probe
+          echo PLOOS-M4.3-AFTER-EXEC
           EOF
 
           cat > /tmp/ploosprobe.S <<'EOF'
