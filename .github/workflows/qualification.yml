@@ -165,6 +165,12 @@ jobs:
           .text
           .globl _start
           _start:
+              /* Atari programs enter with the basepage at 4(sp).  Establish
+               * a private stack at p_hitpa before issuing any GEMDOS calls. */
+              move.l  4(sp),a0
+              move.l  4(a0),sp
+              sub.l   #64,sp
+
               /* GEMDOS Fcreate("u:/a/PLOOSPASS.TXT", 0) */
               clr.w   -(sp)
               pea     filename
