@@ -165,6 +165,11 @@ jobs:
           .text
           .globl _start
           _start:
+              pea     msg_enter
+              move.w  #9,-(sp)
+              trap    #1
+              addq.l  #6,sp
+
               clr.w   -(sp)
               pea     filename
               move.w  #0x3c,-(sp)
@@ -174,6 +179,11 @@ jobs:
               bmi.s   fail
               move.w  d0,d2
 
+              pea     msg_created
+              move.w  #9,-(sp)
+              trap    #1
+              addq.l  #6,sp
+
               pea     marker
               move.l  #marker_len,-(sp)
               move.w  d2,-(sp)
@@ -182,6 +192,11 @@ jobs:
               lea     12(sp),sp
               cmp.l   #marker_len,d0
               bne.s   fail
+
+              pea     msg_written
+              move.w  #9,-(sp)
+              trap    #1
+              addq.l  #6,sp
 
               move.w  d2,-(sp)
               move.w  #0x3e,-(sp)
@@ -199,6 +214,12 @@ jobs:
               trap    #1
 
           .data
+          msg_enter:
+              .asciz  "PLOOS-PROBE-ENTER\\r\\n"
+          msg_created:
+              .asciz  "PLOOS-PROBE-CREATED\\r\\n"
+          msg_written:
+              .asciz  "PLOOS-PROBE-WROTE\\r\\n"
           filename:
               .asciz  "u:/a/PLOOSPASS.TXT"
           marker:
