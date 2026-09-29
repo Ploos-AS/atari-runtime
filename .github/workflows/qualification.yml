@@ -205,6 +205,17 @@ jobs:
               tst.l   d0
               bmi.s   fail
 
+              /* FreeMiNT Sync(): flush guest filesystem state to media. */
+              move.w  #0x0150,-(sp)
+              trap    #1
+              addq.l  #2,sp
+
+              /* FreeMiNT Shutdown(SHUT_NOPOWEROFF): orderly unmount. */
+              move.l  #3,-(sp)
+              move.w  #0x0151,-(sp)
+              trap    #1
+              addq.l  #6,sp
+
               clr.w   -(sp)
               trap    #1
 
