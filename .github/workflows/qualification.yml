@@ -165,13 +165,6 @@ jobs:
           .text
           .globl _start
           _start:
-              /* Atari programs enter with the basepage at 4(sp).  Establish
-               * a private stack at p_hitpa before issuing any GEMDOS calls. */
-              move.l  4(sp),a0
-              move.l  4(a0),sp
-              sub.l   #64,sp
-
-              /* GEMDOS Fcreate("u:/a/PLOOSPASS.TXT", 0) */
               clr.w   -(sp)
               pea     filename
               move.w  #0x3c,-(sp)
@@ -181,33 +174,27 @@ jobs:
               bmi.s   fail
               move.w  d0,d2
 
-              /* GEMDOS Fwrite(handle, length, marker) */
-              move.l  #marker_end-marker,-(sp)
               pea     marker
+              move.l  #marker_len,-(sp)
               move.w  d2,-(sp)
               move.w  #0x40,-(sp)
               trap    #1
               lea     12(sp),sp
-              tst.l   d0
-              bmi.s   close_fail
+              cmp.l   #marker_len,d0
+              bne.s   fail
 
-              /* GEMDOS Fclose(handle) */
               move.w  d2,-(sp)
               move.w  #0x3e,-(sp)
               trap    #1
               addq.l  #4,sp
+              tst.l   d0
+              bmi.s   fail
 
-              /* GEMDOS Pterm0 */
               clr.w   -(sp)
               trap    #1
 
-          close_fail:
-              move.w  d2,-(sp)
-              move.w  #0x3e,-(sp)
-              trap    #1
-              addq.l  #4,sp
           fail:
-              move.w  #20,-(sp)
+              move.w  #1,-(sp)
               move.w  #0x4c,-(sp)
               trap    #1
 
@@ -216,7 +203,7 @@ jobs:
               .asciz  "u:/a/PLOOSPASS.TXT"
           marker:
               .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n"
-          marker_end:
+              .equ    marker_len, .-marker
           EOF
 
           assembler="$(find /tmp/mint-toolchain \( -type f -o -type l \) -name m68k-atari-mint-as -print -quit)"
