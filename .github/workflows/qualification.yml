@@ -251,6 +251,12 @@ jobs:
           cat artifacts/hatari-m4-3-tt-freemint-stderr.log || true
           grep -Ei 'FreeMiNT|MiNT|PLOOS|panic|fatal|error' artifacts/hatari-m4-3-tt-freemint-{stdout,stderr,debug,trace}.log 2>/dev/null | tail -n 400 | tee artifacts/hatari-m4-3-tt-freemint-visible.log || true
 
+          # The guest probe has returned from Fwrite. Ensure the writable
+          # floppy image is stable on the host before inspecting it.
+          sync artifacts/tt-freemint.st || sync
+          sleep 2
+          mdir -i artifacts/tt-freemint.st :: | tee artifacts/hatari-m4-3-tt-freemint-postboot-disk.txt
+
           rm -f /tmp/PLOOSPASS.TXT
           mcopy -i artifacts/tt-freemint.st ::/PLOOSPASS.TXT /tmp/PLOOSPASS.TXT
           test -s /tmp/PLOOSPASS.TXT
