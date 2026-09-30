@@ -144,7 +144,8 @@ jobs:
           # Use a real FAT12 Atari disk image.  Once FreeMiNT takes over,
           # Hatari GEMDOS host-directory emulation is no longer a valid
           # filesystem qualification path for the kernel.
-          rm -f artifacts/tt-freemint.st
+          rm -f artifacts/tt-freemint.st artifacts/tt-freemint-hd.img
+          ./tools/make-atari-hd-image.sh 16 artifacts/tt-freemint-hd.img PLOOSTT
           dd if=/dev/zero of=artifacts/tt-freemint.st bs=1024 count=1440
           mkfs.fat -F 12 -n MINTTT artifacts/tt-freemint.st
           mmd -i artifacts/tt-freemint.st ::/AUTO
@@ -232,7 +233,7 @@ jobs:
           msg_written:
               .asciz  "PLOOS-PROBE-WROTE\\r\\n"
           filename:
-              .asciz  "u:/a/PLOOSPASS.TXT"
+              .asciz  "u:/c/PLOOSPASS.TXT"
           marker:
               .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n"
               .equ    marker_len, .-marker
@@ -256,20 +257,21 @@ jobs:
           set +e
           docker run --rm \
             -v "$PWD/artifacts:/runtime/artifacts" atari-runtime:m2 \
-            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=3s 90s hatari --machine tt --memsize 4 --tos /runtime/roms/emutos.img --disk-a /runtime/artifacts/tt-freemint.st --protect-floppy off --fastfdc yes --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-m4-3-tt-freemint-trace.log --log-level debug --log-file /runtime/artifacts/hatari-m4-3-tt-freemint-debug.log >/runtime/artifacts/hatari-m4-3-tt-freemint-stdout.log 2>/runtime/artifacts/hatari-m4-3-tt-freemint-stderr.log; rc=$?; cp /tmp/xvfb.log /runtime/artifacts/hatari-m4-3-tt-freemint-xvfb.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
+            sh -c 'set +e; Xvfb :99 -screen 0 1024x768x24 >/tmp/xvfb.log 2>&1 & x=$!; export DISPLAY=:99; sleep 1; timeout --signal=TERM --kill-after=3s 90s hatari --machine tt --memsize 4 --tos /runtime/roms/emutos.img --disk-a /runtime/artifacts/tt-freemint.st --protect-floppy off --acsi /runtime/artifacts/tt-freemint-hd.img --fastfdc yes --trace os_base,gemdos --trace-file /runtime/artifacts/hatari-m4-3-tt-freemint-trace.log --log-level debug --log-file /runtime/artifacts/hatari-m4-3-tt-freemint-debug.log >/runtime/artifacts/hatari-m4-3-tt-freemint-stdout.log 2>/runtime/artifacts/hatari-m4-3-tt-freemint-stderr.log; rc=$?; cp /tmp/xvfb.log /runtime/artifacts/hatari-m4-3-tt-freemint-xvfb.log; kill "$x" 2>/dev/null || true; wait "$x" 2>/dev/null || true; exit "$rc"'
           rc=$?
           set -e
           cat artifacts/hatari-m4-3-tt-freemint-stderr.log || true
           grep -Ei 'FreeMiNT|MiNT|PLOOS|panic|fatal|error' artifacts/hatari-m4-3-tt-freemint-{stdout,stderr,debug,trace}.log 2>/dev/null | tail -n 400 | tee artifacts/hatari-m4-3-tt-freemint-visible.log || true
 
-          # The guest probe has returned from Fwrite. Ensure the writable
-          # floppy image is stable on the host before inspecting it.
-          sync artifacts/tt-freemint.st || sync
+          # The probe writes its evidence to the FAT16 hard disk (C:).
+          # Partition 1 starts at LBA 1, so inspect that partition directly.
+          sync artifacts/tt-freemint-hd.img || sync
           sleep 2
-          mdir -i artifacts/tt-freemint.st :: | tee artifacts/hatari-m4-3-tt-freemint-postboot-disk.txt
+          dd if=artifacts/tt-freemint-hd.img of=/tmp/tt-freemint-part.img bs=512 skip=1 status=none
+          mdir -i /tmp/tt-freemint-part.img :: | tee artifacts/hatari-m4-3-tt-freemint-postboot-disk.txt
 
           rm -f /tmp/PLOOSPASS.TXT
-          mcopy -i artifacts/tt-freemint.st ::/PLOOSPASS.TXT /tmp/PLOOSPASS.TXT
+          mcopy -i /tmp/tt-freemint-part.img ::/PLOOSPASS.TXT /tmp/PLOOSPASS.TXT
           test -s /tmp/PLOOSPASS.TXT
           tr -d '\r' < /tmp/PLOOSPASS.TXT | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS'
           cp /tmp/PLOOSPASS.TXT artifacts/hatari-m4-3-tt-freemint-PLOOSPASS.TXT
@@ -281,6 +283,7 @@ jobs:
             echo 'machine=tt'
             echo 'cpu=68030'
             echo 'boot_media=FAT12-floppy'
+            echo 'evidence_media=FAT16-ACSI'
             echo 'kernel=mint030.prg'
             echo 'kernel_build=PASS'
             echo 'kernel_boot=PASS'
