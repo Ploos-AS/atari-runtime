@@ -226,15 +226,15 @@ jobs:
 
           .data
           msg_enter:
-              .asciz  "PLOOS-PROBE-ENTER\\r\\n"
+              .asciz  "PLOOS-PROBE-ENTER\r\n"
           msg_created:
-              .asciz  "PLOOS-PROBE-CREATED\\r\\n"
+              .asciz  "PLOOS-PROBE-CREATED\r\n"
           msg_written:
-              .asciz  "PLOOS-PROBE-WROTE\\r\\n"
+              .asciz  "PLOOS-PROBE-WROTE\r\n"
           filename:
               .asciz  "u:/c/PLOOSPAS.TXT"
           marker:
-              .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n"
+              .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\r\n"
               .equ    marker_len, .-marker
           EOF
 
