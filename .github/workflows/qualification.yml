@@ -232,7 +232,7 @@ jobs:
           msg_written:
               .asciz  "PLOOS-PROBE-WROTE\\r\\n"
           filename:
-              .asciz  "u:/c/PLOOSPASS.TXT"
+              .asciz  "u:/c/PLOOSPAS.TXT"
           marker:
               .ascii  "Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS\\r\\n"
               .equ    marker_len, .-marker
@@ -270,11 +270,11 @@ jobs:
           dd if=artifacts/tt-freemint-hd.img of=/tmp/tt-freemint-part.img bs=512 skip=1 status=none
           mdir -i /tmp/tt-freemint-part.img :: | tee artifacts/hatari-m4-3-tt-freemint-postboot-disk.txt
 
-          rm -f /tmp/PLOOSPASS.TXT
-          mcopy -i /tmp/tt-freemint-part.img ::/PLOOSPASS.TXT /tmp/PLOOSPASS.TXT
-          test -s /tmp/PLOOSPASS.TXT
-          tr -d '\r' < /tmp/PLOOSPASS.TXT | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS'
-          cp /tmp/PLOOSPASS.TXT artifacts/hatari-m4-3-tt-freemint-PLOOSPASS.TXT
+          rm -f /tmp/PLOOSPAS.TXT
+          mcopy -i /tmp/tt-freemint-part.img ::/PLOOSPAS.TXT /tmp/PLOOSPAS.TXT
+          test -s /tmp/PLOOSPAS.TXT
+          tr -d '\r' < /tmp/PLOOSPAS.TXT | grep -Fxq 'Ploos-AS atari-runtime FreeMiNT Hatari TT execution PASS'
+          cp /tmp/PLOOSPAS.TXT artifacts/hatari-m4-3-tt-freemint-PLOOSPAS.TXT
           grep -Fq 'This is FreeMiNT v1.19.0-ALPHA' artifacts/hatari-m4-3-tt-freemint-stdout.log
           {
             echo 'milestone=M4.3'
