@@ -58,13 +58,16 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - GitHub Actions ARAnyM integration probe run #55 PASS
 - TT/Falcon profiles where supported
 
-### M4.3 — Falcon-oriented FreeMiNT profiles — IN PROGRESS
+### M4.3 — Extended FreeMiNT machine profiles — PASS
 - `falcon-040` profile qualified with standard ARAnyM build in GitHub Actions run #61
 - `falcon-040` requires the same FreeMiNT guest marker and XaAES execution gates as M4.2
 - profile-specific machine-readable evidence records the ARAnyM virtual-machine fidelity boundary
 - `falcon-040-mmu` qualified from a dedicated upstream ARAnyM full-MMU build: full MMU, FreeMiNT bootstrap, XaAES and guest marker PASS
 - standard Ubuntu ARAnyM package remains the non-MMU `falcon-040` baseline
 - do not label ARAnyM as a TT emulator; TT qualification requires an emulator with an actual TT machine model
-- Hatari `tt` machine baseline qualified with EmuTOS boot and canonical `MINIMAL.PRG` guest execution; next add FreeMiNT TT guest qualification
+- Hatari `tt` machine qualified with EmuTOS boot, canonical `MINIMAL.PRG` guest execution, and a CI-built FreeMiNT 68030 kernel
+- TT FreeMiNT boots natively from a FAT16 ACSI disk and executes a guest-side probe
+- exact `PLOOSPAS.TXT` FAT 8.3 marker is persisted to the ACSI image and verified host-side
+- TT FreeMiNT qualification PASS in GitHub Actions run #36924355353
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate

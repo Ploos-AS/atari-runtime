@@ -23,6 +23,7 @@ Baseline target: Hatari + EmuTOS. Cross-emulator target: the same artifact also 
 - **M3.2 — Steem SSE cross-emulator qualification — PASS**
 - **M4.1 — ARAnyM + EmuTOS boot baseline — PASS**
 - **M4.2 — FreeMiNT guest qualification — PASS**
+- **M4.3 — Extended FreeMiNT machine profiles:** PASS — Falcon-oriented ARAnyM profiles plus Hatari TT/FreeMiNT 68030 with FAT16 ACSI guest evidence (run #36924355353)
 
 M2 was qualified in GitHub Actions run #56 on both ST and STE profiles. M3.1 reusable consumer qualification was independently self-tested on both profiles in reusable qualification self-test run #1. The canonical `atari-dev` program executed under Hatari + EmuTOS and created the required guest-side marker through GEMDOS. M3.2 was qualified in Steem SSE + EmuTOS in GitHub Actions run #120: the same canonical `MINIMAL.PRG` executed from `A:\\AUTO\\PROBE.PRG`, created `MINPASS.TXT`, and the exact marker was verified after normalizing GEMDOS CRLF line endings.
 
