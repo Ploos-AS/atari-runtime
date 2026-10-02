@@ -71,3 +71,9 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - TT FreeMiNT qualification PASS in GitHub Actions run #36924355353
 - additional emulator coverage when it adds independent value
 - physical-hardware reports are optional supplemental evidence, never a release gate
+
+### M4.4 — Explicit runtime matrix — IN PROGRESS
+- maintain a single explicit matrix of qualified emulator, machine, CPU and OS combinations
+- distinguish actual Atari TT emulation from ARAnyM Falcon-oriented virtual-machine profiles
+- record the required guest-side evidence gate for every supported runtime profile
+- keep physical hardware supplemental rather than a release gate

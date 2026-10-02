@@ -79,3 +79,7 @@ jobs:
 ```
 
 The caller artifact must contain `MINIMAL.PRG` at its root.
+
+## Runtime matrix
+
+The explicit qualification matrix is maintained in [docs/runtime-matrix.md](docs/runtime-matrix.md). It records emulator, machine/CPU, OS and the guest-side evidence required for each qualified profile.
