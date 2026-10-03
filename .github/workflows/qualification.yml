@@ -10,6 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Validate M4.4 runtime matrix manifest
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("profiles/runtime-matrix.yml")
+          text = p.read_text()
+          required = ["st", "ste", "st-steem-sse", "ste-steem-sse", "tt", "tt-freemint", "falcon-040", "falcon-040-mmu"]
+          ids = re.findall(r"^  - id: (\\S+)$", text, re.M)
+          assert ids == required, f"unexpected runtime matrix ids: {ids}"
+          assert text.count("    status: PASS") == len(required)
+          assert "evidence: PLOOSPAS.TXT" in text
+          assert "machine: tt" in text and "machine: falcon-oriented" in text
+          print("M4.4 runtime matrix manifest: PASS")
+          PY
+
       - name: Build atari-runtime image
         run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata

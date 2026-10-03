@@ -1,0 +1,59 @@
+version: 1
+milestone: M4.4
+profiles:
+  - id: st
+    emulator: hatari
+    machine: st
+    cpu: m68000
+    os: emutos
+    evidence: MINPASS.TXT
+    status: PASS
+  - id: ste
+    emulator: hatari
+    machine: ste
+    cpu: m68000
+    os: emutos
+    evidence: MINPASS.TXT
+    status: PASS
+  - id: st-steem-sse
+    emulator: steem-sse
+    machine: st
+    cpu: m68000
+    os: emutos
+    evidence: MINPASS.TXT
+    status: PASS
+  - id: ste-steem-sse
+    emulator: steem-sse
+    machine: ste
+    cpu: m68000
+    os: emutos
+    evidence: MINPASS.TXT
+    status: PASS
+  - id: tt
+    emulator: hatari
+    machine: tt
+    cpu: m68030
+    os: emutos
+    evidence: MINPASS.TXT
+    status: PASS
+  - id: tt-freemint
+    emulator: hatari
+    machine: tt
+    cpu: m68030
+    os: freemint-1.19
+    evidence: PLOOSPAS.TXT
+    status: PASS
+  - id: falcon-040
+    emulator: aranym
+    machine: falcon-oriented
+    cpu: m68040
+    os: freemint
+    evidence: guest-marker+xaaes
+    status: PASS
+  - id: falcon-040-mmu
+    emulator: aranym-fullmmu
+    machine: falcon-oriented
+    cpu: m68040+mmu
+    os: freemint
+    evidence: guest-marker+xaaes
+    status: PASS
