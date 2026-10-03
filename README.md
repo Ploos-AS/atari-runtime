@@ -81,10 +81,14 @@ jobs:
 
 The caller artifact must contain `MINIMAL.PRG` at its root.
 
+## Reference emulator
+
+Hatari is the reference emulator for atari-runtime. ST, STE and TT baseline qualification is anchored in Hatari. Steem SSE provides independent ST/STE cross-emulator evidence, while ARAnyM provides extended FreeMiNT/Falcon-oriented virtual-machine qualification; neither replaces Hatari as the reference baseline.
+
 ## Runtime matrix
 
 The explicit qualification matrix is maintained in [docs/runtime-matrix.md](docs/runtime-matrix.md). It records emulator, machine/CPU, OS and the guest-side evidence required for each qualified profile.
 
 ### Reusable profile contract
 
-Consumer repositories can require a qualified runtime profile with `tools/runtime-profile.sh PROFILE`. The command emits line-oriented machine-readable fields and exits non-zero for unknown or non-PASS profiles. The reusable qualification workflow applies the same fail-closed gate before consuming caller artifacts.
+Consumer repositories can require a qualified runtime profile with `tools/runtime-profile.sh PROFILE`. The v1 contract is identified as `atari-runtime-profile/v1`. The command emits line-oriented machine-readable fields and exits non-zero for an unsupported contract version, unknown profile, or non-PASS profile. The reusable qualification workflow applies the same fail-closed gate before consuming caller artifacts.

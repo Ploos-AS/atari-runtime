@@ -25,7 +25,10 @@ jobs:
 
       - name: Require qualified runtime profile
         working-directory: atari-runtime
-        run: tools/runtime-profile.sh "${{ inputs.profile }}"
+        run: |
+          tools/runtime-profile.sh "${{ inputs.profile }}" | tee /tmp/runtime-profile.txt
+          grep -Fxq 'contract=atari-runtime-profile/v1' /tmp/runtime-profile.txt
+          grep -Fxq 'status=PASS' /tmp/runtime-profile.txt
 
       - name: Download caller artifact
         uses: actions/download-artifact@v4

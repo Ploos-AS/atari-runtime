@@ -88,9 +88,13 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - reusable qualification workflow fails closed unless the requested profile is present and PASS
 - GitHub Actions qualification run #37119923731 PASS
 
-## M5 — Stable runtime service — IN PROGRESS
+## M5 — Stable runtime service — PASS
 - version the consumer-facing runtime profile contract independently of individual emulator profiles
 - expose contract identity in machine-readable CLI output
 - fail closed when a consumer encounters an unsupported contract version
 - preserve the v1 field semantics for compatible additions
 - qualify contract-version behavior in CI before declaring M5 PASS
+- Hatari is the explicit reference emulator for ST, STE and TT baseline qualification
+- Steem SSE and ARAnyM remain supplemental independent/extended qualification paths
+- reusable workflow requires `atari-runtime-profile/v1` and `status=PASS` before consuming caller artifacts
+- GitHub Actions qualification, Steem SSE and ARAnyM runs for commit `9669d68` PASS
