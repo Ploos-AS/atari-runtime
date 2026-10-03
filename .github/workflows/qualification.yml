@@ -18,7 +18,7 @@ jobs:
           p = Path("profiles/runtime-matrix.yml")
           text = p.read_text()
           required = ["st", "ste", "st-steem-sse", "ste-steem-sse", "tt", "tt-freemint", "falcon-040", "falcon-040-mmu"]
-          ids = re.findall(r"^  - id: (\\S+)$", text, re.M)
+          ids = re.findall(r"^  - id: ([^ ]+)$", text, re.M)
           assert ids == required, f"unexpected runtime matrix ids: {ids}"
           assert text.count("    status: PASS") == len(required)
           assert "evidence: PLOOSPAS.TXT" in text
