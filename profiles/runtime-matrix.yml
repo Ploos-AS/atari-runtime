@@ -1,5 +1,6 @@
 version: 1
-milestone: M4.4
+contract: atari-runtime-profile/v1
+milestone: M5
 profiles:
   - id: st
     emulator: hatari

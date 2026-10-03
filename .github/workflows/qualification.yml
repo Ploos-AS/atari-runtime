@@ -37,6 +37,17 @@ jobs:
           fi
           echo "M4.5 consumer runtime contract: PASS"
 
+      - name: Verify M5 versioned runtime contract
+        run: |
+          tools/runtime-profile.sh tt-freemint | grep -Fxq 'contract=atari-runtime-profile/v1'
+          cp profiles/runtime-matrix.yml /tmp/runtime-matrix.yml
+          sed -i 's#contract: atari-runtime-profile/v1#contract: atari-runtime-profile/v999#' /tmp/runtime-matrix.yml
+          if ATARI_RUNTIME_MATRIX=/tmp/runtime-matrix.yml tools/runtime-profile.sh st; then
+            echo "ERROR: unsupported contract version unexpectedly accepted" >&2
+            exit 1
+          fi
+          echo "M5 versioned runtime contract: PASS"
+
       - name: Build atari-runtime image
         run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata

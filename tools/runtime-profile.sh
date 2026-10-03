@@ -11,6 +11,11 @@ fi
 
 test -s "$manifest" || { echo "runtime matrix not found: $manifest" >&2; exit 2; }
 
+grep -Fxq "contract: atari-runtime-profile/v1" "$manifest" || {
+  echo "unsupported runtime contract" >&2
+  exit 5
+}
+
 awk -v wanted="$profile" '
   /^  - id: / { id=$3; active=(id == wanted); found=found || active; next }
   active && /^    status: / { status=$2 }
@@ -22,6 +27,6 @@ awk -v wanted="$profile" '
   END {
     if (!found) exit 3
     if (status != "PASS") exit 4
-    printf "profile=%s\nemulator=%s\nmachine=%s\ncpu=%s\nos=%s\nevidence=%s\nstatus=%s\n", wanted, emulator, machine, cpu, os, evidence, status
+    printf "contract=atari-runtime-profile/v1\nprofile=%s\nemulator=%s\nmachine=%s\ncpu=%s\nos=%s\nevidence=%s\nstatus=%s\n", wanted, emulator, machine, cpu, os, evidence, status
   }
 ' "$manifest"

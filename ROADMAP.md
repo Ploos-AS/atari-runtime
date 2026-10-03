@@ -87,3 +87,10 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - validate all currently qualified profiles in CI
 - reusable qualification workflow fails closed unless the requested profile is present and PASS
 - GitHub Actions qualification run #37119923731 PASS
+
+## M5 — Stable runtime service — IN PROGRESS
+- version the consumer-facing runtime profile contract independently of individual emulator profiles
+- expose contract identity in machine-readable CLI output
+- fail closed when a consumer encounters an unsupported contract version
+- preserve the v1 field semantics for compatible additions
+- qualify contract-version behavior in CI before declaring M5 PASS
