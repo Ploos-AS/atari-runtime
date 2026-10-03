@@ -92,3 +92,7 @@ The explicit qualification matrix is maintained in [docs/runtime-matrix.md](docs
 ### Reusable profile contract
 
 Consumer repositories can require a qualified runtime profile with `tools/runtime-profile.sh PROFILE`. The v1 contract is identified as `atari-runtime-profile/v1`. The command emits line-oriented machine-readable fields and exits non-zero for an unsupported contract version, unknown profile, or non-PASS profile. The reusable qualification workflow applies the same fail-closed gate before consuming caller artifacts.
+
+## Release contract
+
+The first stable release line is `v1`, beginning with `v1.0.0`. Compatible v1 releases preserve the `atari-runtime-profile/v1` consumer contract. Hatari remains the reference emulator for the v1 ST/STE/TT baseline. Release metadata is machine-readable in `profiles/release.yml`.

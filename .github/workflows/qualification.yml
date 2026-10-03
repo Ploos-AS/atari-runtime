@@ -48,6 +48,17 @@ jobs:
           fi
           echo "M5 versioned runtime contract: PASS"
 
+      - name: Validate M6.1 release contract
+        run: |
+          grep -Fxq 'version: 1.0.0' profiles/release.yml
+          grep -Fxq 'contract: atari-runtime-profile/v1' profiles/release.yml
+          grep -Fxq 'reference_emulator: hatari' profiles/release.yml
+          grep -Fxq 'moving_major_tag: v1' profiles/release.yml
+          grep -Fxq 'release_tag: v1.0.0' profiles/release.yml
+          tools/runtime-profile.sh st | grep -Fxq 'contract=atari-runtime-profile/v1'
+          tools/runtime-profile.sh tt | grep -Fxq 'emulator=hatari'
+          echo "M6.1 release contract: PASS"
+
       - name: Build atari-runtime image
         run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata

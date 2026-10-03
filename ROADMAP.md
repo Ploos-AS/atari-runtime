@@ -98,3 +98,12 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - Steem SSE and ARAnyM remain supplemental independent/extended qualification paths
 - reusable workflow requires `atari-runtime-profile/v1` and `status=PASS` before consuming caller artifacts
 - GitHub Actions qualification, Steem SSE and ARAnyM runs for commit `9669d68` PASS
+
+## M6 — Release and consumer integration — IN PROGRESS
+
+### M6.1 — v1 release hardening — IN PROGRESS
+- define `v1.0.0` as the first stable runtime release
+- retain `v1` as the moving compatible major tag
+- freeze `atari-runtime-profile/v1` compatibility semantics
+- keep Hatari as the reference emulator for the v1 baseline
+- validate release identity and runtime contract together in CI before tagging

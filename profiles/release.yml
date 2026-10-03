@@ -1,0 +1,5 @@
+version: 1.0.0
+contract: atari-runtime-profile/v1
+reference_emulator: hatari
+moving_major_tag: v1
+release_tag: v1.0.0
