@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       profile:
-        description: Atari machine profile (st or ste)
+        description: Qualified Atari runtime profile required by the caller
         required: false
         default: st
         type: string
@@ -22,6 +22,10 @@ jobs:
         with:
           repository: Ploos-AS/atari-runtime
           path: atari-runtime
+
+      - name: Require qualified runtime profile
+        working-directory: atari-runtime
+        run: tools/runtime-profile.sh "${{ inputs.profile }}"
 
       - name: Download caller artifact
         uses: actions/download-artifact@v4
