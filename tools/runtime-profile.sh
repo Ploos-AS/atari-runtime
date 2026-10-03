@@ -22,6 +22,6 @@ awk -v wanted="$profile" '
   END {
     if (!found) exit 3
     if (status != "PASS") exit 4
-    printf "profile=%s\\nemulator=%s\\nmachine=%s\\ncpu=%s\\nos=%s\\nevidence=%s\\nstatus=%s\\n", wanted, emulator, machine, cpu, os, evidence, status
+    printf "profile=%s\nemulator=%s\nmachine=%s\ncpu=%s\nos=%s\nevidence=%s\nstatus=%s\n", wanted, emulator, machine, cpu, os, evidence, status
   }
 ' "$manifest"
