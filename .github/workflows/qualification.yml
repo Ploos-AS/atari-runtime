@@ -26,6 +26,17 @@ jobs:
           print("M4.4 runtime matrix manifest: PASS")
           PY
 
+      - name: Verify M4.5 consumer runtime contract
+        run: |
+          for profile in st ste st-steem-sse ste-steem-sse tt tt-freemint falcon-040 falcon-040-mmu; do
+            tools/runtime-profile.sh "$profile" | grep -Fxq 'status=PASS'
+          done
+          if tools/runtime-profile.sh does-not-exist; then
+            echo "ERROR: unknown runtime profile unexpectedly accepted" >&2
+            exit 1
+          fi
+          echo "M4.5 consumer runtime contract: PASS"
+
       - name: Build atari-runtime image
         run: docker build -t atari-runtime:m2 -f Containerfile .
       - name: Runtime metadata

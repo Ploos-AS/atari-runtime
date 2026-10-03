@@ -79,3 +79,9 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - keep physical hardware supplemental rather than a release gate
 - machine-readable `profiles/runtime-matrix.yml` is CI-validated
 - GitHub Actions qualification run #37116922793 PASS
+
+### M4.5 — Reusable runtime contract — IN PROGRESS
+- expose qualified runtime profiles through a stable command-line contract
+- allow consumer repositories to require a profile and fail closed when it is unknown or not PASS
+- keep the contract backed by the M4.4 machine-readable matrix
+- validate all currently qualified profiles in CI
