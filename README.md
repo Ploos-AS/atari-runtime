@@ -96,3 +96,7 @@ Consumer repositories can require a qualified runtime profile with `tools/runtim
 ## Release contract
 
 The first stable release line is `v1`, beginning with `v1.0.0`. Compatible v1 releases preserve the `atari-runtime-profile/v1` consumer contract. Hatari remains the reference emulator for the v1 ST/STE/TT baseline. Release metadata is machine-readable in `profiles/release.yml`.
+
+## Project checkpoint
+
+`v1.0.0` is the stable baseline. End-to-end `atari-dev` consumer qualification against `atari-runtime@v1` passes for ST and STE. Further roadmap development is intentionally paused at this checkpoint; CI and the v1 compatibility contract remain active.

@@ -99,11 +99,17 @@ Physical Atari hardware is not required. Emulator qualification is authoritative
 - reusable workflow requires `atari-runtime-profile/v1` and `status=PASS` before consuming caller artifacts
 - GitHub Actions qualification, Steem SSE and ARAnyM runs for commit `9669d68` PASS
 
-## M6 — Release and consumer integration — IN PROGRESS
+## M6 — Release and consumer integration — PAUSED AFTER STABLE BASELINE
 
-### M6.1 — v1 release hardening — IN PROGRESS
+### M6.1 — v1 release hardening — PASS
 - define `v1.0.0` as the first stable runtime release
 - retain `v1` as the moving compatible major tag
 - freeze `atari-runtime-profile/v1` compatibility semantics
 - keep Hatari as the reference emulator for the v1 baseline
 - validate release identity and runtime contract together in CI before tagging
+
+### M6.2 — atari-dev stable consumer integration — PASS
+- `atari-dev` consumes the reusable qualification workflow through moving major tag `@v1`
+- canonical `MINIMAL.PRG` is qualified on both ST and STE profiles
+- end-to-end GitHub Actions run `37121828700` PASS
+- stable checkpoint: `v1.0.0` / `atari-runtime-profile/v1`; further M6 work is intentionally paused
